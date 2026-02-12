@@ -11,23 +11,18 @@ export const searchRoutes = (app: Elysia) => {
 
     return app.group('/api/v1', (app) =>
         app.get('/search', async ({ query }) => {
-            try {
-                if (!query.q) {
-                    return {
-                        data: {
-                            folders: [],
-                            files: []
-                        }
+            if (!query.q) {
+                return {
+                    data: {
+                        folders: [],
+                        files: []
                     }
                 }
+            }
 
-                const results = await searchService.globalSearch(query.q)
-                return {
-                    data: results
-                }
-            } catch (error: any) {
-                console.error('Error in global search:', error)
-                throw new Error('Failed to perform global search')
+            const results = await searchService.globalSearch(query.q)
+            return {
+                data: results
             }
         }, {
             query: t.Object({
