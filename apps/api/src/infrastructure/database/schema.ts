@@ -1,0 +1,33 @@
+import { pgTable, uuid, varchar, timestamp, index } from 'drizzle-orm/pg-core'
+
+/**
+ * Folders table
+ * Adjacency List pattern: each folder knows its parent
+ */
+export const folders = pgTable('folders', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull(),
+    parentId: uuid('parent_id').references(() => folders.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => ({
+    parentIdIdx: index('idx_folders_parent_id').on(table.parentId),
+    nameIdx: index('idx_folders_name').on(table.name)
+}))
+
+/**
+ * Files table
+ * Each file belongs to exactly one folder
+ */
+export const files = pgTable('files', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull(),
+    extension: varchar('extension', { length: 50 }).notNull(),
+    mimeType: varchar('mime_type', { length: 100 }),
+    folderId: uuid('folder_id').references(() => folders.id, { onDelete: 'cascade' }).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => ({
+    folderIdIdx: index('idx_files_folder_id').on(table.folderId),
+    nameIdx: index('idx_files_name').on(table.name)
+}))

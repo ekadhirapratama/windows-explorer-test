@@ -1,0 +1,25 @@
+{
+  "name": "windows-explorer-test",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --filter='apps/*' dev",
+    "dev:api": "bun run --filter='@windows-explorer/api' dev",
+    "dev:web": "bun run --filter='@windows-explorer/web' dev",
+    "build": "bun run --filter='apps/*' build",
+    "test": "bun test",
+    "db:migrate": "bun run --filter='@windows-explorer/api' db:migrate",
+    "db:seed": "bun run --filter='@windows-explorer/api' db:seed",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:reset": "docker-compose down -v && docker-compose up -d"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.3.3"
+  }
+}
