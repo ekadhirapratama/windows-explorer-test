@@ -56,15 +56,15 @@ function handleDoubleClick() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--spacing-md);
+  padding: var(--content-item-padding);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--content-item-radius);
   transition: background-color var(--transition-fast);
   gap: var(--spacing-sm);
 }
 
 .content-item:hover {
-  background-color: var(--color-bg-hover);
+  background-color: var(--folder-hover-bg);
 }
 
 .content-item:active {
@@ -75,9 +75,9 @@ function handleDoubleClick() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  color: var(--color-accent);
+  width: var(--file-icon-size);
+  height: var(--file-icon-size);
+  color: var(--file-icon-color);
 }
 
 .content-item--folder .content-item__icon {

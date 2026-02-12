@@ -1,10 +1,5 @@
 <template>
   <div class="folder-tree">
-    <!-- Header -->
-    <div class="folder-tree__header">
-      <h2 class="folder-tree__title">Folders</h2>
-    </div>
-
     <!-- Loading State -->
     <div v-if="isLoadingRoots" class="folder-tree__loading">
       <span class="loading-spinner"></span>
@@ -109,7 +104,6 @@ function handleSelect(folderId: string) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--color-bg-primary);
   border-right: 1px solid var(--color-border);
 }
 

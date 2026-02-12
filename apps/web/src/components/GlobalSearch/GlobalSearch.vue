@@ -102,7 +102,7 @@ onUnmounted(() => {
 .global-search {
   position: relative;
   flex: 1;
-  max-width: 400px;
+  max-width: var(--search-width);
   margin-left: auto;
 }
 
@@ -124,12 +124,12 @@ onUnmounted(() => {
   width: 100%;
   padding: 8px 36px 8px 36px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: var(--font-size-base);
   font-family: var(--font-family);
-  background-color: var(--color-bg-secondary);
+  background-color: var(--search-bg);
   color: var(--color-text-primary);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .global-search__input:hover {
@@ -139,9 +139,9 @@ onUnmounted(() => {
 
 .global-search__input:focus {
   outline: none;
-  border-color: var(--color-accent);
+  border-color: var(--primary);
   background-color: var(--color-bg-primary);
-  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+  box-shadow: 0 0 0 4px var(--search-focus-ring);
 }
 
 .global-search__clear {
@@ -191,6 +191,7 @@ onUnmounted(() => {
   height: 60px;
   padding: 10px;
   background-color: var(--color-bg-secondary);
+  backdrop-filter: blur(6px);
   z-index: 1000;
   display: flex;
   align-items: center;

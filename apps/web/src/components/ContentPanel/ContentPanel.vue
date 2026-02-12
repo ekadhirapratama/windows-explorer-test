@@ -1,25 +1,5 @@
 <template>
   <div class="content-panel">
-    <!-- Header with Breadcrumbs -->
-    <div class="content-panel__header">
-      <div class="content-panel__header-top">
-        <Breadcrumb
-          v-if="displayBreadcrumbs.length > 0"
-          :items="displayBreadcrumbs"
-          @navigate="handleBreadcrumbNavigate"
-        />
-        <div class="content-panel__count" v-if="!isLoading && !error">
-          {{ itemCount }} {{ itemCount === 1 ? 'item' : 'items' }}
-        </div>
-      </div>
-      
-      <div class="content-panel__header-bottom" v-if="isSearchActive">
-        <div class="content-panel__search-indicator">
-          Searching for "{{ searchQuery }}"
-        </div>
-      </div>
-    </div>
-
     <!-- Loading State -->
     <div v-if="isLoading || isSearching" class="content-panel__state">
       <span class="loading-spinner" style="width: 24px; height: 24px;"></span>
@@ -90,11 +70,10 @@ import type { Folder, File } from '@shared/types/folder'
 import { api } from '../../services/api'
 import { useSearch } from '../../composables/useSearch'
 import ContentItem from './ContentItem.vue'
-import Breadcrumb, { type BreadcrumbItem } from '../Breadcrumb/Breadcrumb.vue'
 
 const props = defineProps<{
   selectedFolder: Folder | null
-  breadcrumbItems: BreadcrumbItem[]
+  breadcrumbItems?: any[]
   onNavigateToFolder?: (folderId: string) => void
 }>()
 
@@ -122,14 +101,6 @@ const isEmpty = computed(() => {
   return folders.value.length === 0 && files.value.length === 0
 })
 
-const displayBreadcrumbs = computed(() => {
-  if (isSearchActive.value) {
-    return [
-      { id: 'search-results', name: 'Search Results' }
-    ]
-  }
-  return props.breadcrumbItems
-})
 
 // Watch selected folder and load its contents OR search results
 watch([() => props.selectedFolder, searchResults, isSearchActive], async ([newFolder, results, searching]) => {
@@ -180,18 +151,7 @@ function handleSearchClear() {
   clearSearch()
 }
 
-function handleBreadcrumbNavigate(item: BreadcrumbItem) {
-  if (item.id === 'search-results') return
 
-  // Clear search on breadcrumb navigation
-  if (isSearchActive.value) {
-    clearSearch()
-  }
-
-  if (props.onNavigateToFolder) {
-    props.onNavigateToFolder(item.id)
-  }
-}
 </script>
 
 <style scoped>
@@ -206,7 +166,6 @@ function handleBreadcrumbNavigate(item: BreadcrumbItem) {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-bg-secondary);
 }
@@ -239,9 +198,9 @@ function handleBreadcrumbNavigate(item: BreadcrumbItem) {
 .content-panel__grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(var(--content-grid-min), 1fr));
+  gap: var(--spacing-md);
+  padding: calc(var(--spacing-md) + 4px);
   overflow-y: auto;
   align-content: start;
 }

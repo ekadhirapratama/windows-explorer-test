@@ -68,7 +68,7 @@ function handleEscape() {
 <style scoped>
 .search-bar {
   flex: 1;
-  max-width: 400px;
+  max-width: var(--search-width);
 }
 
 .search-bar__input-wrapper {
@@ -88,12 +88,12 @@ function handleEscape() {
   width: 100%;
   padding: 8px 36px 8px 36px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: var(--font-size-base);
   font-family: var(--font-family);
-  background-color: var(--color-bg-primary);
+  background-color: var(--search-bg);
   color: var(--color-text-primary);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .search-bar__input:hover {
@@ -102,8 +102,8 @@ function handleEscape() {
 
 .search-bar__input:focus {
   outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--search-focus-ring);
 }
 
 .search-bar__input:disabled {

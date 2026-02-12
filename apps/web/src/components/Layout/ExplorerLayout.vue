@@ -1,59 +1,46 @@
 <template>
-  <div class="explorer-layout">
-    <!-- Header/Toolbar -->
-    <header class="explorer-layout__header">
-      <div class="explorer-layout__header-left">
-        <button 
-          class="explorer-layout__menu-toggle"
-          @click="toggleSidebar"
-          aria-label="Toggle sidebar"
-          v-if="isMobile"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <h1 class="explorer-layout__title">Windows Explorer</h1>
-      </div>
-      <GlobalSearch />
-    </header>
+  <div class="app-container explorer-layout" :class="{ dark: isDark }">
+    <!-- Action Toolbar -->
+    <ActionToolbar @new="$emit('new')" @sort="$emit('sort')" @"toggle-view"="$emit('toggle-view')" />
 
-    <!-- Main Content Area -->
-    <div class="explorer-layout__main">
-      <!-- Mobile Overlay -->
-      <div 
-        v-if="isMobile && isSidebarOpen"
-        class="explorer-layout__overlay"
-        @click="closeSidebar"
-      ></div>
+    <!-- Navigation Bar (Breadcrumb + Search) -->
+    <NavigationBar :items="breadcrumbItems" @navigate="handleBreadcrumbNavigate" />
 
-      <!-- Left Sidebar (Folder Tree) -->
-      <aside 
-        class="explorer-layout__sidebar"
-        :class="{ 
-          'explorer-layout__sidebar--open': isSidebarOpen,
-          'explorer-layout__sidebar--mobile': isMobile
-        }"
-      >
-        <slot name="sidebar"></slot>
-      </aside>
+    <!-- Main Area -->
+    <main class="main-content explorer-layout__main">
+      <!-- Sidebar -->
+      <Sidebar class="sidebar explorer-layout__sidebar">
+        <template #this-pc>
+          <slot name="sidebar"></slot>
+        </template>
+      </Sidebar>
 
-      <!-- Right Content Panel -->
-      <main class="explorer-layout__content">
+      <!-- Content -->
+      <section class="file-area explorer-layout__content">
         <slot name="content"></slot>
-      </main>
-    </div>
+      </section>
+    </main>
+
+    <!-- Status Bar -->
+    <StatusBar />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import GlobalSearch from '../GlobalSearch/GlobalSearch.vue'
+import ActionToolbar from './ActionToolbar.vue'
+import NavigationBar from './NavigationBar.vue'
+import Sidebar from './Sidebar.vue'
+import StatusBar from './StatusBar.vue'
 
 const isMobile = ref(false)
 const isSidebarOpen = ref(false)
+const isDark = ref(false)
+
+// breadcrumbItems will be provided by parent via prop
+const props = defineProps<{ breadcrumbItems?: any[] }>()
+import { computed } from 'vue'
+const breadcrumbItems = computed(() => props.breadcrumbItems ?? [])
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
@@ -78,6 +65,13 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', checkMobile)
 })
+
+function handleBreadcrumbNavigate(item: any) {
+  // Bubble up to parent
+  emit('navigate', item)
+}
+
+const emit = defineEmits(['navigate','new','sort','toggle-view'])
 </script>
 
 <style scoped>

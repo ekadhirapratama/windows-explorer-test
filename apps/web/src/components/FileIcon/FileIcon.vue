@@ -108,5 +108,13 @@ const iconType = computed(() => {
 <style scoped>
 svg {
   flex-shrink: 0;
+  width: var(--file-icon-size);
+  height: var(--file-icon-size);
+  color: var(--file-icon-color);
+}
+
+/* Ensure inner shapes scale correctly */
+svg > * {
+  vector-effect: non-scaling-stroke;
 }
 </style>

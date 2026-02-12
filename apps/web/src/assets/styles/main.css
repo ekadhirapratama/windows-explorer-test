@@ -40,6 +40,26 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  /* Design aliases (from .design/code.vue) */
+  --primary: #135bec;
+  --bg-light: #f6f6f8;
+  --bg-dark: #101622;
+  /* Folder tree tokens */
+  --folder-row-height: 40px;
+  --folder-indent: 20px; /* base indent per level */
+  --folder-chevron-size: 16px;
+  --folder-hover-bg: rgba(19,91,236,0.05);
+  --folder-selected-bg: rgba(19,91,236,0.12);
+  /* Search tokens */
+  --search-width: 16rem;
+  --search-focus-ring: rgba(19,91,236,0.15);
+  --search-bg: var(--color-bg-primary);
+  /* Content / File item tokens */
+  --content-grid-min: 120px;
+  --content-item-padding: 12px;
+  --content-item-radius: 12px;
+  --file-icon-size: 64px;
+  --file-icon-color: var(--color-accent);
 }
 
 /* Reset & Base */
@@ -126,3 +146,88 @@ body {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Additional design styles from .design/code.vue */
+.app-container {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg-light);
+  color: #0f172a;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-container.dark {
+  background-color: var(--bg-dark);
+  color: #f1f5f9;
+}
+
+.toolbar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  z-index: 10;
+}
+.dark .toolbar {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.btn-new { display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0.75rem; background-color:var(--primary); color:white; border-radius:0.5rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.15s; border:none }
+.btn-new:hover { background-color: #1e4bd0 }
+.btn-icon { padding:0.5rem; color:#475569; border-radius:0.5rem; cursor:pointer; transition:background 0.15s; border:none; background:transparent; display:flex; align-items:center }
+.btn-icon:hover:not(:disabled){ background:#f1f5f9 }
+.btn-icon:disabled { color:#94a3b8; cursor:not-allowed }
+.btn-icon.danger { color:#ef4444 }
+.btn-text { display:flex; align-items:center; gap:0.25rem; padding:0.375rem 0.5rem; color:#475569; border-radius:0.5rem; cursor:pointer; transition:background 0.15s; border:none; background:transparent; font-size:0.875rem }
+.divider-v { height:1.5rem; width:1px; background:#e2e8f0; margin:0 0.5rem }
+
+/* Navigation bar helpers */
+.nav-actions { display:flex; align-items:center; gap:0.5rem }
+.nav-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:6px; border:none; background:transparent; cursor:pointer; color:var(--color-text-primary); transition:background var(--transition-fast) }
+.nav-btn:hover { background: rgba(0,0,0,0.04) }
+.nav-home-icon { color:var(--primary); font-size:1.125rem; margin-right:0.5rem }
+
+/* Toolbar helpers */
+.toolbar-actions { display:flex; align-items:center; gap:0.5rem }
+.toolbar-end { display:flex; align-items:center; gap:0.5rem }
+
+.nav-bar { background: rgba(255,255,255,0.5); border-bottom: 1px solid #e2e8f0; padding: 0.375rem 1rem; display:flex; align-items:center; gap:0.75rem; backdrop-filter: blur(8px) }
+.breadcrumb-bar { flex-grow:1; display:flex; align-items:center; background:white; border:1px solid #e2e8f0; border-radius:0.375rem; padding:0.25rem 0.75rem; font-size:0.875rem; color:#475569 }
+.search-bar { position:relative; width:16rem }
+.search-icon { position:absolute; left:0.625rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1.125rem }
+.search-input { width:100%; background:white; border:1px solid #e2e8f0; border-radius:0.375rem; padding:0.25rem 0.75rem 0.25rem 2.25rem; font-size:0.875rem; color:#1e293b; outline:none; font-family:'Inter', sans-serif }
+.search-input:focus { border-color:var(--primary); box-shadow:0 0 0 2px rgba(19,91,236,0.15) }
+
+.main-content { display:flex; flex-grow:1; overflow:hidden }
+.sidebar { width:16rem; background:#f8fafc; border-right:1px solid #e2e8f0; display:flex; flex-direction:column; overflow-y:auto; flex-shrink:0 }
+.section-label { padding:0 1rem; font-size:0.6875rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem }
+.sidebar-item { display:flex; align-items:center; gap:0.75rem; padding:0.375rem 1rem; font-size:0.875rem; color:#475569; cursor:pointer; text-decoration:none; transition:background 0.12s }
+.sidebar-item:hover { background: rgba(19,91,236,0.08) }
+.sidebar-active { background: rgba(19,91,236,0.12); border-left:3px solid var(--primary); font-weight:500; color:#1e293b }
+
+.sidebar-content { padding: var(--spacing-md) 0; display:flex; flex-direction:column; gap: var(--spacing-lg); }
+.sidebar-list { display:flex; flex-direction:column; gap: 4px }
+
+.file-area { flex-grow:1; background:white; overflow-y:auto; padding:1.5rem }
+.file-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap:1rem }
+.file-item { display:flex; flex-direction:column; align-items:center; padding:0.75rem; border-radius:0.75rem; cursor:pointer; border:1px solid transparent; transition:all 0.15s }
+.file-item:hover { background: rgba(19,91,236,0.05); border-color: rgba(19,91,236,0.2) }
+.file-item--selected { background: rgba(19,91,236,0.1) !important; border-color: rgba(19,91,236,0.3) !important }
+.file-icon { width:4rem; height:4rem; margin-bottom:0.5rem; display:flex; align-items:center; justify-content:center }
+.file-name { font-size:0.75rem; text-align:center; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; padding:0 0.25rem }
+
+.status-bar { background:#f8fafc; border-top:1px solid #e2e8f0; padding:0.25rem 1rem; display:flex; align-items:center; justify-content:space-between; font-size:0.6875rem; color:#94a3b8 }
+.context-menu { position:fixed; width:14rem; background:white; box-shadow:0 10px 40px rgba(0,0,0,0.15); border-radius:0.75rem; border:1px solid #e2e8f0; padding:0.5rem 0; z-index:50 }
+.context-item { padding:0.375rem 0.75rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.875rem; color:#374151; gap:0.75rem }
+.context-item:hover { background:#f1f5f9 }
+.context-divider { height:1px; background:#f1f5f9; margin:0.25rem 0.5rem }
+
+.custom-scrollbar::-webkit-scrollbar { width:8px; height:8px }
+.custom-scrollbar::-webkit-scrollbar-track { background:transparent }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius:10px }
+.custom-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2) }

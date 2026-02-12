@@ -9,8 +9,7 @@
     <div 
       class="folder-tree-node__item"
       @click="handleClick"
-      :style="{ paddingLeft: `${depth * 16 + 8}px` }"
-    >
+      :style="{ '--depth': depth }">
       <!-- Expand/Collapse Arrow -->
       <button
         v-if="folder.hasChildren"
@@ -19,8 +18,8 @@
         :aria-label="isExpanded ? 'Collapse folder' : 'Expand folder'"
       >
         <svg 
-          width="12" 
-          height="12" 
+          :width="`var(--folder-chevron-size)`" 
+          :height="`var(--folder-chevron-size)`" 
           viewBox="0 0 12 12" 
           fill="none" 
           :class="{ 'folder-tree-node__toggle-icon--expanded': isExpanded }"
@@ -98,8 +97,10 @@ function handleClick() {
 .folder-tree-node__item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: 6px 8px;
+  gap: var(--spacing-sm);
+  padding: 0 8px;
+  height: var(--folder-row-height);
+  padding-left: calc(var(--depth) * var(--folder-indent) + 8px);
   cursor: pointer;
   transition: background-color var(--transition-fast);
   border-radius: 4px;
@@ -107,20 +108,20 @@ function handleClick() {
 }
 
 .folder-tree-node__item:hover {
-  background-color: var(--color-bg-hover);
+  background-color: var(--folder-hover-bg);
 }
 
 .folder-tree-node--selected > .folder-tree-node__item {
-  background-color: var(--color-bg-selected);
-  font-weight: 500;
+  background-color: var(--folder-selected-bg);
+  font-weight: 600;
 }
 
 .folder-tree-node__toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: var(--folder-chevron-size);
+  height: var(--folder-chevron-size);
   padding: 0;
   border: none;
   background: transparent;
@@ -131,8 +132,8 @@ function handleClick() {
 
 .folder-tree-node__toggle:hover {
   color: var(--color-text-primary);
-  background-color: var(--color-bg-hover);
-  border-radius: 2px;
+  background-color: var(--folder-hover-bg);
+  border-radius: 4px;
 }
 
 .folder-tree-node__toggle-icon--expanded {
@@ -140,13 +141,15 @@ function handleClick() {
 }
 
 .folder-tree-node__spacer {
-  width: 16px;
-  height: 16px;
+  width: var(--folder-chevron-size);
+  height: var(--folder-chevron-size);
 }
 
 .folder-tree-node__icon {
   flex-shrink: 0;
   color: var(--color-accent);
+  width: 18px;
+  height: 18px;
 }
 
 .folder-tree-node__name {

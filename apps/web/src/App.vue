@@ -1,5 +1,5 @@
 <template>
-  <ExplorerLayout>
+  <ExplorerLayout :breadcrumb-items="breadcrumbItems">
     <template #sidebar>
       <FolderTree 
         @select-folder="handleFolderSelect"
