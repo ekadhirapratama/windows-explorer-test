@@ -74,6 +74,11 @@ export function useFolderTree() {
                     ...folder,
                     children: folder.hasChildren ? [] : undefined
                 }))
+
+                // Update hasChildren if no children were loaded
+                if (folders.length === 0) {
+                    parentFolder.hasChildren = false
+                }
             }
         } catch (err: any) {
             error.value = err.message || 'Failed to load folder children'
@@ -85,20 +90,22 @@ export function useFolderTree() {
 
     /**
      * Toggle folder expansion
+     * @param folderId - ID of folder to toggle
+     * @param forceExpand - If true, force expand even if already expanded
      */
-    async function toggleFolder(folderId: string) {
+    async function toggleFolder(folderId: string, forceExpand = false) {
         const isExpanded = expandedFolderIds.has(folderId)
 
-        if (isExpanded) {
+        if (isExpanded && !forceExpand) {
             // Collapse folder
             expandedFolderIds.delete(folderId)
-        } else {
+        } else if (!isExpanded || forceExpand) {
             // Expand folder
             expandedFolderIds.add(folderId)
 
             // Load children if not already loaded
             const folder = findFolderById(rootFolders.value, folderId)
-            if (folder && folder.hasChildren && (!folder.children || folder.children.length === 0)) {
+            if (folder && (!folder.children || folder.children.length === 0)) {
                 await loadFolderChildren(folderId)
             }
         }
@@ -132,6 +139,13 @@ export function useFolderTree() {
         return selectedFolderId.value === folderId
     }
 
+    /**
+     * Find folder by ID in the tree (wrapper for public use)
+     */
+    function findFolder(folderId: string) {
+        return findFolderById(rootFolders.value, folderId)
+    }
+
     return {
         // State
         rootFolders,
@@ -147,6 +161,7 @@ export function useFolderTree() {
         selectFolder,
         isFolderExpanded,
         isFolderLoading,
-        isFolderSelected
+        isFolderSelected,
+        findFolderById: findFolder
     }
 }

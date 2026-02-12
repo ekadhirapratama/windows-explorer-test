@@ -1,19 +1,29 @@
 <template>
   <div class="content-panel">
-    <!-- Header -->
+    <!-- Header with Breadcrumbs -->
     <div class="content-panel__header">
-      <h2 class="content-panel__title">
-        {{ headerTitle }}
-      </h2>
-      <div class="content-panel__count" v-if="!isLoading && !error">
-        {{ itemCount }} {{ itemCount === 1 ? 'item' : 'items' }}
+      <div class="content-panel__header-top">
+        <Breadcrumb
+          v-if="displayBreadcrumbs.length > 0"
+          :items="displayBreadcrumbs"
+          @navigate="handleBreadcrumbNavigate"
+        />
+        <div class="content-panel__count" v-if="!isLoading && !error">
+          {{ itemCount }} {{ itemCount === 1 ? 'item' : 'items' }}
+        </div>
+      </div>
+      
+      <div class="content-panel__header-bottom" v-if="isSearchActive">
+        <div class="content-panel__search-indicator">
+          Searching for "{{ searchQuery }}"
+        </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="content-panel__state">
+    <div v-if="isLoading || isSearching" class="content-panel__state">
       <span class="loading-spinner" style="width: 24px; height: 24px;"></span>
-      <span>Loading contents...</span>
+      <span>{{ isSearching ? 'Searching...' : 'Loading contents...' }}</span>
     </div>
 
     <!-- Error State -->
@@ -26,20 +36,32 @@
       <span>{{ error }}</span>
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="isEmpty" class="content-panel__state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-      </svg>
-      <span>📂 This folder is empty</span>
-    </div>
-
-    <!-- No Selection State -->
-    <div v-else-if="!selectedFolder" class="content-panel__state">
+    <!-- Empty State (No Selection & Not Searching) -->
+    <div v-else-if="!selectedFolder && !isSearchActive" class="content-panel__state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
       </svg>
       <span>Select a folder to view its contents</span>
+    </div>
+
+    <!-- Empty Search Results -->
+    <div v-else-if="isSearchActive && isEmpty" class="content-panel__state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <span>No results found for "{{ searchQuery }}"</span>
+      <button class="content-panel__clear-search" @click="handleSearchClear">
+        Clear search
+      </button>
+    </div>
+
+    <!-- Empty Folder -->
+    <div v-else-if="!isSearchActive && isEmpty" class="content-panel__state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>📂 This folder is empty</span>
     </div>
 
     <!-- Grid Content -->
@@ -66,10 +88,13 @@
 import { ref, computed, watch } from 'vue'
 import type { Folder, File } from '@shared/types/folder'
 import { api } from '../../services/api'
+import { useSearch } from '../../composables/useSearch'
 import ContentItem from './ContentItem.vue'
+import Breadcrumb, { type BreadcrumbItem } from '../Breadcrumb/Breadcrumb.vue'
 
 const props = defineProps<{
   selectedFolder: Folder | null
+  breadcrumbItems: BreadcrumbItem[]
   onNavigateToFolder?: (folderId: string) => void
 }>()
 
@@ -78,27 +103,49 @@ const files = ref<File[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-const headerTitle = computed(() => {
-  return props.selectedFolder?.name || 'Windows Explorer'
-})
+// Search composable - Global state
+const {
+  searchQuery,
+  searchResults,
+  isSearching,
+  searchError,
+  isSearchActive,
+  clearSearch
+} = useSearch()
 
+// Computed properties
 const itemCount = computed(() => {
   return folders.value.length + files.value.length
 })
 
 const isEmpty = computed(() => {
-  return props.selectedFolder && folders.value.length === 0 && files.value.length === 0
+  return folders.value.length === 0 && files.value.length === 0
 })
 
-// Watch selected folder and load its contents
-watch(() => props.selectedFolder, async (newFolder) => {
-  if (!newFolder) {
+const displayBreadcrumbs = computed(() => {
+  if (isSearchActive.value) {
+    return [
+      { id: 'search-results', name: 'Search Results' }
+    ]
+  }
+  return props.breadcrumbItems
+})
+
+// Watch selected folder and load its contents OR search results
+watch([() => props.selectedFolder, searchResults, isSearchActive], async ([newFolder, results, searching]) => {
+  if (searching && results) {
+    // Show search results
+    folders.value = results.folders
+    files.value = results.files
+    error.value = searchError.value
+  } else if (newFolder) {
+    // Load folder contents
+    await loadFolderContents(newFolder.id)
+  } else {
+    // No selection and not searching
     folders.value = []
     files.value = []
-    return
   }
-
-  await loadFolderContents(newFolder.id)
 }, { immediate: true })
 
 async function loadFolderContents(folderId: string) {
@@ -119,8 +166,30 @@ async function loadFolderContents(folderId: string) {
 
 function handleFolderDoubleClick(item: Folder | File) {
   const folder = item as Folder
+  // Clear search on navigation
+  if (isSearchActive.value) {
+    clearSearch()
+  }
+  
   if (props.onNavigateToFolder) {
     props.onNavigateToFolder(folder.id)
+  }
+}
+
+function handleSearchClear() {
+  clearSearch()
+}
+
+function handleBreadcrumbNavigate(item: BreadcrumbItem) {
+  if (item.id === 'search-results') return
+
+  // Clear search on breadcrumb navigation
+  if (isSearchActive.value) {
+    clearSearch()
+  }
+
+  if (props.onNavigateToFolder) {
+    props.onNavigateToFolder(item.id)
   }
 }
 </script>
@@ -135,22 +204,36 @@ function handleFolderDoubleClick(item: Folder | File) {
 
 .content-panel__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--spacing-sm);
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-bg-secondary);
 }
 
-.content-panel__title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--color-text-primary);
+.content-panel__header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.content-panel__header-bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .content-panel__count {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.content-panel__search-indicator {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  font-weight: 500;
 }
 
 .content-panel__grid {
@@ -177,6 +260,24 @@ function handleFolderDoubleClick(item: Folder | File) {
 
 .content-panel__state--error {
   color: #dc2626;
+}
+
+.content-panel__clear-search {
+  margin-top: var(--spacing-sm);
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.content-panel__clear-search:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-accent);
 }
 
 @media (max-width: 768px) {

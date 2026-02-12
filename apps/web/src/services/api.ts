@@ -34,11 +34,11 @@ class ApiService {
     }
 
     /**
-     * Search within a specific folder
+     * Global search across all folders and files
      */
-    async searchInFolder(folderId: string, query: string): Promise<{ folders: Folder[], files: File[] }> {
+    async globalSearch(query: string): Promise<{ folders: Folder[], files: File[] }> {
         const encodedQuery = encodeURIComponent(query)
-        const response = await this.fetch<GetFolderChildrenResponse>(`/api/v1/folders/${folderId}/search?q=${encodedQuery}`)
+        const response = await this.fetch<GetFolderChildrenResponse>(`/api/v1/search?q=${encodedQuery}`)
         return response.data
     }
 }

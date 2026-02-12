@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { folderRoutes } from './presentation/routes/folders'
+import { searchRoutes } from './presentation/routes/search'
 
 const app = new Elysia()
     // CORS middleware
@@ -33,6 +34,10 @@ const app = new Elysia()
     // Folder routes
     // @ts-ignore
     .use(folderRoutes)
+
+    // Search routes
+    // @ts-ignore
+    .use(searchRoutes)
 
     // Error handling
     .onError(({ code, error, set }) => {

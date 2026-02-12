@@ -17,6 +17,7 @@
         </button>
         <h1 class="explorer-layout__title">Windows Explorer</h1>
       </div>
+      <GlobalSearch />
     </header>
 
     <!-- Main Content Area -->
@@ -49,6 +50,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import GlobalSearch from '../GlobalSearch/GlobalSearch.vue'
 
 const isMobile = ref(false)
 const isSidebarOpen = ref(false)
