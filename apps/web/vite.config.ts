@@ -18,5 +18,10 @@ export default defineConfig({
                 changeOrigin: true
             }
         }
+    },
+    test: {
+        globals: true,
+        environment: 'happy-dom',
+        include: ['tests/unit/**/*.{test,spec}.ts'],
     }
 })

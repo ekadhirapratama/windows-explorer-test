@@ -1,9 +1,6 @@
 <template>
   <div class="folder-tree">
-    <!-- Header -->
-    <div class="folder-tree__header">
-      <h2 class="folder-tree__title">Folders</h2>
-    </div>
+
 
     <!-- Loading State -->
     <div v-if="isLoadingRoots" class="folder-tree__loading">

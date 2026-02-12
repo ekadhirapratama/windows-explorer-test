@@ -1,24 +1,28 @@
 <template>
   <div class="explorer-layout">
-    <!-- Header/Toolbar -->
-    <header class="explorer-layout__header">
-      <div class="explorer-layout__header-left">
-        <button 
-          class="explorer-layout__menu-toggle"
-          @click="toggleSidebar"
-          aria-label="Toggle sidebar"
-          v-if="isMobile"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <h1 class="explorer-layout__title">Windows Explorer</h1>
-      </div>
-      <GlobalSearch />
-    </header>
+    <!-- Action Toolbar (Header 1) -->
+    <slot name="action-toolbar">
+      <!-- default empty toolbar slot -->
+    </slot>
+
+    <!-- Navigation Bar (Header 2) -->
+    <slot name="navigation-bar">
+      <!-- fallback navigation bar: title + global search -->
+      <header class="explorer-layout__header">
+        <div class="explorer-layout__header-left">
+          <button 
+            class="explorer-layout__menu-toggle"
+            @click="toggleSidebar"
+            aria-label="Toggle sidebar"
+            v-if="isMobile"
+          >
+            <span class="material-icons-round">menu</span>
+          </button>
+          <h1 class="explorer-layout__title">Windows Explorer</h1>
+        </div>
+        <GlobalSearch />
+      </header>
+    </slot>
 
     <!-- Main Content Area -->
     <div class="explorer-layout__main">

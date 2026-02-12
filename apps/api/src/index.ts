@@ -4,7 +4,7 @@ import { swagger } from '@elysiajs/swagger'
 import { folderRoutes } from './presentation/routes/folders'
 import { searchRoutes } from './presentation/routes/search'
 
-const app = new Elysia()
+export const app = new Elysia()
     // CORS middleware
     .use(cors({
         origin: true, // Allow all origins in development
