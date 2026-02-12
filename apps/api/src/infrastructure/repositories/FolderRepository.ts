@@ -35,7 +35,7 @@ export class FolderRepository implements IFolderRepository {
                 createdAt: folders.createdAt,
                 updatedAt: folders.updatedAt,
                 hasChildren: sql<boolean>`(
-          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
+          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.parentId})
         )`
             })
             .from(folders)
@@ -108,5 +108,33 @@ export class FolderRepository implements IFolderRepository {
             .limit(1)
 
         return result.length > 0 ? (result[0] as Folder) : null
+    }
+
+    async globalSearch(query: string): Promise<{ folders: Folder[], files: File[] }> {
+        // Search for folders by name across entire database
+        const matchingFolders = await db
+            .select({
+                id: folders.id,
+                name: folders.name,
+                parentId: folders.parentId,
+                createdAt: folders.createdAt,
+                updatedAt: folders.updatedAt,
+                hasChildren: sql<boolean>`(
+          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
+        )`
+            })
+            .from(folders)
+            .where(ilike(folders.name, `%${query}%`))
+
+        // Search for files by name across entire database
+        const matchingFiles = await db
+            .select()
+            .from(files)
+            .where(ilike(files.name, `%${query}%`))
+
+        return {
+            folders: matchingFolders as Folder[],
+            files: matchingFiles as File[]
+        }
     }
 }
