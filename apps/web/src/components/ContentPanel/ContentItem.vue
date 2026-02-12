@@ -1,13 +1,15 @@
 <template>
   <div 
     class="content-item"
-    :class="[ { 'content-item--folder': isFolder }, selectedClass ]"
+    :class="{ 'content-item--folder': isFolder }"
     @click="handleClick"
     @dblclick="handleDoubleClick"
   >
     <div class="content-item__icon">
-      <FileIcon v-if="!isFolder" :extension="item.extension || ''" class="text-6xl group-hover:scale-110 transition-transform" />
-      <span v-else class="material-icons-round text-6xl text-amber-400 group-hover:scale-110 transition-transform">folder</span>
+      <FileIcon v-if="!isFolder" :extension="item.extension || ''" />
+      <svg v-else width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+      </svg>
     </div>
     <div class="content-item__name" :title="item.name">
       {{ displayName }}
@@ -22,15 +24,12 @@ import FileIcon from '../FileIcon/FileIcon.vue'
 
 const props = defineProps<{
   item: Folder | File
-  isSelected?: boolean
 }>()
 
 const emit = defineEmits<{
   click: [item: Folder | File]
   doubleClick: [item: Folder | File]
 }>()
-
-const selectedClass = computed(() => props.isSelected ? 'content-item--selected' : '')
 
 const isFolder = computed(() => !('extension' in props.item))
 
@@ -83,11 +82,6 @@ function handleDoubleClick() {
 
 .content-item--folder .content-item__icon {
   color: #fbbf24; /* Yellow for folders */
-}
-
-.content-item--selected {
-  background-color: rgba(19, 91, 236, 0.08);
-  border: 1px solid rgba(19, 91, 236, 0.12);
 }
 
 .content-item__name {

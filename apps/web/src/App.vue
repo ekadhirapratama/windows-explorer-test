@@ -1,15 +1,9 @@
 <template>
   <ExplorerLayout>
-    <template #action-toolbar>
-      <ActionToolbar />
-    </template>
-
-    <template #navigation-bar>
-      <NavigationBar />
-    </template>
-
     <template #sidebar>
-      <Sidebar />
+      <FolderTree 
+        @select-folder="handleFolderSelect"
+      />
     </template>
 
     <template #content>
@@ -19,10 +13,6 @@
         :on-navigate-to-folder="handleNavigateToFolder"
       />
     </template>
-    
-    <template #statusbar>
-      <StatusBar />
-    </template>
   </ExplorerLayout>
 </template>
 
@@ -31,11 +21,8 @@ import { ref, provide, computed, watch } from 'vue'
 import type { Folder } from '@shared/types/folder'
 import type { BreadcrumbItem } from './components/Breadcrumb/Breadcrumb.vue'
 import ExplorerLayout from './components/Layout/ExplorerLayout.vue'
-import Sidebar from './components/Layout/Sidebar.vue'
+import FolderTree from './components/FolderTree/FolderTree.vue'
 import ContentPanel from './components/ContentPanel/ContentPanel.vue'
-import ActionToolbar from './components/Layout/ActionToolbar.vue'
-import NavigationBar from './components/Layout/NavigationBar.vue'
-import StatusBar from './components/Layout/StatusBar.vue'
 import { useFolderTree } from './composables/useFolderTree'
 
 const folderTreeComposable = useFolderTree()
