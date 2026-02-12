@@ -35,9 +35,6 @@ bun install
 ```bash
 # Using Docker (recommended)
 docker-compose up -d
-
-# Or use your local PostgreSQL installation
-# Make sure it's running on port 5432
 ```
 
 ### 3. Run Database Migrations
@@ -62,10 +59,6 @@ bun run db:seed
 ```bash
 # From project root - starts both API and Web
 bun run dev
-
-# Or start individually:
-bun run dev:api   # Backend on http://localhost:3000
-bun run dev:web   # Frontend on http://localhost:5173
 ```
 
 ## 🐳 Docker Deployment
@@ -90,12 +83,6 @@ docker-compose down
 # Reset database (removes volumes)
 docker-compose down -v
 ```
-
-Once running, access:
-- **Frontend**: http://localhost:8080
-- **API**: http://localhost:3000
-- **API Health**: http://localhost:3000/health
-- **PostgreSQL**: localhost:5432
 
 ### Development Mode (Local)
 
@@ -161,15 +148,7 @@ Once the backend is running, visit:
 
 ## 🔧 Environment Variables
 
-Copy `.env.example` to `.env` and adjust as needed:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=windows_explorer
-```
+Copy `.env.example` to `.env` and adjust as needed
 
 ## 📄 License
 
