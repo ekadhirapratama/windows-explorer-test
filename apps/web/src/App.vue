@@ -1,24 +1,45 @@
 <template>
-  <div id="app">
-    <h1>Windows Explorer</h1>
-    <p>Frontend is running! 🎉</p>
-    <p>Vue 3 + Vite + TypeScript</p>
-  </div>
+  <ExplorerLayout>
+    <template #sidebar>
+      <FolderTree 
+        @select-folder="handleFolderSelect"
+      />
+    </template>
+
+    <template #content>
+      <ContentPanel 
+        :selected-folder="selectedFolder"
+        :on-navigate-to-folder="handleNavigateToFolder"
+      />
+    </template>
+  </ExplorerLayout>
 </template>
 
 <script setup lang="ts">
-// This is a placeholder. We'll build the actual UI in Phase 2
+import { ref, provide } from 'vue'
+import type { Folder } from '@shared/types/folder'
+import ExplorerLayout from './components/Layout/ExplorerLayout.vue'
+import FolderTree from './components/FolderTree/FolderTree.vue'
+import ContentPanel from './components/ContentPanel/ContentPanel.vue'
+import { useFolderTree } from './composables/useFolderTree'
+
+const folderTreeComposable = useFolderTree()
+const { selectedFolder, selectFolder, toggleFolder } = folderTreeComposable
+
+// Provide the composable to child components
+provide('folderTree', folderTreeComposable)
+
+function handleFolderSelect(folder: Folder) {
+  selectFolder(folder.id)
+}
+
+async function handleNavigateToFolder(folderId: string) {
+  selectFolder(folderId)
+  // Expand the folder to show its children in the tree
+  await toggleFolder(folderId)
+}
 </script>
 
-<style scoped>
-#app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-h1 {
-  color: #0078d4;
-}
+<style>
+/* Global styles are now in main.css */
 </style>

@@ -1,3 +1,8 @@
+import type { File } from './file'
+
+// Re-export File for convenience
+export type { File }
+
 /**
  * Represents a folder in the file system
  */
