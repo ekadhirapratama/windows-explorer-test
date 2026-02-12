@@ -14,17 +14,27 @@ async function seed() {
         await db.delete(files)
         await db.delete(folders)
 
-        // Root folders
-        console.log('📁 Creating root folders...')
-        const [home] = await db.insert(folders).values({ name: 'Home', parentId: null }).returning()
-        const [documents] = await db.insert(folders).values({ name: 'Documents', parentId: null }).returning()
-        const [downloads] = await db.insert(folders).values({ name: 'Downloads', parentId: null }).returning()
-        const [pictures] = await db.insert(folders).values({ name: 'Pictures', parentId: null }).returning()
-        const [music] = await db.insert(folders).values({ name: 'Music', parentId: null }).returning()
-        const [videos] = await db.insert(folders).values({ name: 'Videos', parentId: null }).returning()
-        const [desktop] = await db.insert(folders).values({ name: 'Desktop', parentId: null }).returning()
+        // Create drives (root folders)
+        console.log('📁 Creating root drives...')
+        const [driveC] = await db.insert(folders).values({ name: 'Local Disk (C:)', parentId: null }).returning()
+        const [driveD] = await db.insert(folders).values({ name: 'Local Disk (D:)', parentId: null }).returning()
 
-        // Documents structure
+        // Create C: structure
+        console.log('🖥️ Creating C: structure...')
+        const [windowsFolder] = await db.insert(folders).values({ name: 'Windows', parentId: driveC.id }).returning()
+        const [programFiles] = await db.insert(folders).values({ name: 'Program Files', parentId: driveC.id }).returning()
+        const [usersFolder] = await db.insert(folders).values({ name: 'Users', parentId: driveC.id }).returning()
+        const [yourUser] = await db.insert(folders).values({ name: 'YourName', parentId: usersFolder.id }).returning()
+
+        // Move Quick Access folders under C:\Users\YourName
+        console.log('📂 Creating Quick Access folders under C:\\Users\\YourName...')
+        const [desktop] = await db.insert(folders).values({ name: 'Desktop', parentId: yourUser.id }).returning()
+        const [documents] = await db.insert(folders).values({ name: 'Documents', parentId: yourUser.id }).returning()
+        const [downloads] = await db.insert(folders).values({ name: 'Downloads', parentId: yourUser.id }).returning()
+        const [pictures] = await db.insert(folders).values({ name: 'Pictures', parentId: yourUser.id }).returning()
+        const [tempFolder] = await db.insert(folders).values({ name: 'Temp', parentId: driveC.id }).returning()
+
+        // Create some sample files/folders under Documents
         console.log('📄 Creating Documents structure...')
         const [workFolder] = await db.insert(folders).values({ name: 'Work', parentId: documents.id }).returning()
         const [personalFolder] = await db.insert(folders).values({ name: 'Personal', parentId: documents.id }).returning()
@@ -65,25 +75,14 @@ async function seed() {
             { name: 'profile-photo', extension: 'jpg', mimeType: 'image/jpeg', folderId: pictures.id }
         ])
 
-        // Music structure
-        console.log('🎵 Creating Music structure...')
-        const [playlistsFolder] = await db.insert(folders).values({ name: 'Playlists', parentId: music.id }).returning()
-        await db.insert(files).values([
-            { name: 'favorites', extension: 'm3u', mimeType: 'audio/x-mpegurl', folderId: playlistsFolder.id },
-            { name: 'song-1', extension: 'mp3', mimeType: 'audio/mpeg', folderId: music.id },
-            { name: 'song-2', extension: 'mp3', mimeType: 'audio/mpeg', folderId: music.id }
-        ])
+        // Create D: structure
+        console.log('📁 Creating D: structure...')
+        const [projectsD] = await db.insert(folders).values({ name: 'Projects', parentId: driveD.id }).returning()
+        const [mediaD] = await db.insert(folders).values({ name: 'Media', parentId: driveD.id }).returning()
+        const [backupD] = await db.insert(folders).values({ name: 'Backup', parentId: driveD.id }).returning()
 
-        // Videos structure
-        console.log('🎬 Creating Videos structure...')
-        const [tutorialsFolder] = await db.insert(folders).values({ name: 'Tutorials', parentId: videos.id }).returning()
-        await db.insert(files).values([
-            { name: 'vue-3-intro', extension: 'mp4', mimeType: 'video/mp4', folderId: tutorialsFolder.id },
-            { name: 'birthday-party', extension: 'mov', mimeType: 'video/quicktime', folderId: videos.id }
-        ])
-
-        // Desktop structure
-        console.log('🖥️  Creating Desktop structure...')
+        // Desktop files
+        console.log('🖥️  Creating Desktop files...')
         await db.insert(files).values([
             { name: 'project-notes', extension: 'txt', mimeType: 'text/plain', folderId: desktop.id },
             { name: 'todo-list', extension: 'md', mimeType: 'text/markdown', folderId: desktop.id }
