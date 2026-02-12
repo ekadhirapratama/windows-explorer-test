@@ -57,42 +57,5 @@ export const folderRoutes = (app: Elysia) => {
                     tags: ['folders']
                 }
             })
-
-            // GET /api/v1/folders/:id/search?q=term - Search within folder
-            .get('/:id/search', async ({ params, query }) => {
-                try {
-                    if (!query.q) {
-                        return {
-                            data: {
-                                folders: [],
-                                files: []
-                            }
-                        }
-                    }
-
-                    const results = await searchService.search(params.id, query.q)
-                    return {
-                        data: results
-                    }
-                } catch (error: any) {
-                    if (error.message === 'Folder not found') {
-                        throw new Error('Folder not found')
-                    }
-                    console.error('Error searching folder:', error)
-                    throw new Error('Failed to search folder')
-                }
-            }, {
-                params: t.Object({
-                    id: t.String()
-                }),
-                query: t.Object({
-                    q: t.Optional(t.String())
-                }),
-                detail: {
-                    summary: 'Search within folder',
-                    description: 'Search for folders and files by name within a specific folder',
-                    tags: ['search']
-                }
-            })
     )
 }

@@ -53,44 +53,6 @@ export class FolderRepository implements IFolderRepository {
         }
     }
 
-    async searchInFolder(folderId: string, query: string): Promise<{ folders: Folder[], files: File[] }> {
-        // Search for folders by name within the folder
-        const matchingFolders = await db
-            .select({
-                id: folders.id,
-                name: folders.name,
-                parentId: folders.parentId,
-                createdAt: folders.createdAt,
-                updatedAt: folders.updatedAt,
-                hasChildren: sql<boolean>`(
-          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
-        )`
-            })
-            .from(folders)
-            .where(
-                and(
-                    eq(folders.parentId, folderId),
-                    ilike(folders.name, `%${query}%`)
-                )
-            )
-
-        // Search for files by name within the folder
-        const matchingFiles = await db
-            .select()
-            .from(files)
-            .where(
-                and(
-                    eq(files.folderId, folderId),
-                    ilike(files.name, `%${query}%`)
-                )
-            )
-
-        return {
-            folders: matchingFolders as Folder[],
-            files: matchingFiles as File[]
-        }
-    }
-
     async findById(id: string): Promise<Folder | null> {
         const result = await db
             .select({

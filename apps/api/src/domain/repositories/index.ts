@@ -19,12 +19,11 @@ export interface IFolderRepository {
     findChildren(parentId: string): Promise<{ folders: Folder[], files: File[] }>
 
     /**
-     * Search for folders and files by name within a specific folder scope
-     * @param folderId - ID of the folder to search in
+     * Global search across all folders and files
      * @param query - Search term
-     * @returns Object with matching folders and files
+     * @returns Object with matching folders and files from entire database
      */
-    searchInFolder(folderId: string, query: string): Promise<{ folders: Folder[], files: File[] }>
+    globalSearch(query: string): Promise<{ folders: Folder[], files: File[] }>
 
     /**
      * Find a single folder by ID
