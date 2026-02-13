@@ -109,7 +109,7 @@ function handleClick() {
   cursor: pointer;
   transition: background-color var(--transition-fast);
   border-radius: 4px;
-  margin: 1px 4px;
+  margin: 1px 8px;
 }
 
 .folder-tree-node__item .material-icons-round {
