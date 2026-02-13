@@ -57,5 +57,59 @@ export const folderRoutes = (app: Elysia) => {
                     tags: ['folders']
                 }
             })
+
+            // POST /api/v1/folders - Create a new folder
+            .post('/', async ({ body, set }) => {
+                try {
+                    const created = await folderService.createFolder(body.name, body.parentId ?? null)
+                    set.status = 201
+                    return {
+                        data: created
+                    }
+                } catch (error: any) {
+                    if (error.message === 'Folder name is required') {
+                        set.status = 400
+                        return { error: 'Folder name is required' }
+                    }
+                    if (error.message === 'Folder not found') {
+                        throw new Error('Folder not found')
+                    }
+                    console.error('Error creating folder:', error)
+                    throw new Error('Failed to create folder')
+                }
+            }, {
+                body: t.Object({
+                    name: t.String(),
+                    parentId: t.Optional(t.Union([t.String(), t.Null()]))
+                }),
+                detail: {
+                    summary: 'Create a folder',
+                    description: 'Creates a new folder under an optional parent',
+                    tags: ['folders']
+                }
+            })
+
+            // DELETE /api/v1/folders/:id - Delete a folder
+            .delete('/:id', async ({ params }) => {
+                try {
+                    await folderService.deleteFolder(params.id)
+                    return { success: true }
+                } catch (error: any) {
+                    if (error.message === 'Folder not found') {
+                        throw new Error('Folder not found')
+                    }
+                    console.error('Error deleting folder:', error)
+                    throw new Error('Failed to delete folder')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                detail: {
+                    summary: 'Delete a folder',
+                    description: 'Deletes a folder and all of its contents',
+                    tags: ['folders']
+                }
+            })
     )
 }

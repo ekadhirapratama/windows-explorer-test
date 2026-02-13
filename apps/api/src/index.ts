@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { folderRoutes } from './presentation/routes/folders'
+import { fileRoutes } from './presentation/routes/files'
 import { searchRoutes } from './presentation/routes/search'
 
 const app = new Elysia()
@@ -21,6 +22,7 @@ const app = new Elysia()
             },
             tags: [
                 { name: 'folders', description: 'Folder operations' },
+                { name: 'files', description: 'File operations' },
                 { name: 'search', description: 'Search operations' }
             ]
         },
@@ -39,6 +41,10 @@ const app = new Elysia()
     // @ts-ignore
     .use(searchRoutes)
 
+    // File routes
+    // @ts-ignore
+    .use(fileRoutes)
+
     // Error handling
     .onError(({ code, error, set }) => {
         console.error(`[${code}]`, error)
@@ -51,6 +57,11 @@ const app = new Elysia()
         if (error.message === 'Search query cannot be empty') {
             set.status = 400
             return { error: 'Search query cannot be empty' }
+        }
+
+        if (error.message === 'File not found') {
+            set.status = 404
+            return { error: 'File not found' }
         }
 
         set.status = 500

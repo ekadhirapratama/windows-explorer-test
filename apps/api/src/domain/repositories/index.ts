@@ -30,6 +30,22 @@ export interface IFolderRepository {
      * @param id - Folder ID
      */
     findById(id: string): Promise<Folder | null>
+
+    /**
+     * Create a new folder
+     */
+    create(data: {
+        name: string
+        parentId: string | null
+        category: 'quick-access' | 'drive' | null
+        icon: string | null
+    }): Promise<Folder>
+
+    /**
+     * Delete a folder by ID
+     * @param id - Folder ID
+     */
+    deleteById(id: string): Promise<boolean>
 }
 
 /**
@@ -48,4 +64,16 @@ export interface IFileRepository {
      * @param query - Search term
      */
     searchInFolder(folderId: string, query: string): Promise<File[]>
+
+    /**
+     * Find a single file by ID
+     * @param id - File ID
+     */
+    findById(id: string): Promise<File | null>
+
+    /**
+     * Delete a file by ID
+     * @param id - File ID
+     */
+    deleteById(id: string): Promise<boolean>
 }

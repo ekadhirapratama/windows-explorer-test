@@ -5,6 +5,45 @@ import { IFolderRepository } from '../../domain/repositories'
 import type { Folder, File } from '../../domain/entities'
 
 export class FolderRepository implements IFolderRepository {
+    async create(data: {
+        name: string
+        parentId: string | null
+        category: 'quick-access' | 'drive' | null
+        icon: string | null
+    }): Promise<Folder> {
+        const [created] = await db
+            .insert(folders)
+            .values({
+                name: data.name,
+                parentId: data.parentId,
+                category: data.category,
+                icon: data.icon
+            })
+            .returning({
+                id: folders.id,
+                name: folders.name,
+                parentId: folders.parentId,
+                createdAt: folders.createdAt,
+                updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon
+            })
+
+        return {
+            ...(created as Omit<Folder, 'hasChildren'>),
+            hasChildren: false
+        }
+    }
+
+    async deleteById(id: string): Promise<boolean> {
+        const deleted = await db
+            .delete(folders)
+            .where(eq(folders.id, id))
+            .returning({ id: folders.id })
+
+        return deleted.length > 0
+    }
+
     async findRoots(): Promise<Folder[]> {
         // Select root folders with hasChildren flag
         const results = await db
@@ -39,7 +78,7 @@ export class FolderRepository implements IFolderRepository {
                 category: folders.category,
                 icon: folders.icon,
                 hasChildren: sql<boolean>`(
-          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.parentId})
+          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
         )`
             })
             .from(folders)

@@ -9,6 +9,30 @@ export class FolderService {
     constructor(private folderRepository: IFolderRepository) { }
 
     /**
+     * Create a new folder
+     */
+    async createFolder(name: string, parentId: string | null): Promise<Folder> {
+        const trimmedName = name.trim()
+        if (!trimmedName) {
+            throw new Error('Folder name is required')
+        }
+
+        if (parentId) {
+            const parent = await this.folderRepository.findById(parentId)
+            if (!parent) {
+                throw new Error('Folder not found')
+            }
+        }
+
+        return await this.folderRepository.create({
+            name: trimmedName,
+            parentId,
+            category: null,
+            icon: null
+        })
+    }
+
+    /**
      * Get all root-level folders
      */
     async getRootFolders(): Promise<Folder[]> {
@@ -37,5 +61,17 @@ export class FolderService {
             throw new Error('Folder not found')
         }
         return folder
+    }
+
+    /**
+     * Delete a folder (cascades to children and files)
+     */
+    async deleteFolder(folderId: string): Promise<void> {
+        const folder = await this.folderRepository.findById(folderId)
+        if (!folder) {
+            throw new Error('Folder not found')
+        }
+
+        await this.folderRepository.deleteById(folderId)
     }
 }
