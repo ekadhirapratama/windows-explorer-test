@@ -30,13 +30,12 @@
       "version": "1.0.0",
       "dependencies": {
         "vue": "^3.4.0",
+        "vue-toastification": "^2.0.0-rc.5",
       },
       "devDependencies": {
         "@playwright/test": "^1.40.0",
         "@vitejs/plugin-vue": "^5.0.0",
         "@vue/test-utils": "^2.4.0",
-        "happy-dom": "^20.6.1",
-        "jsdom": "^28.0.0",
         "typescript": "^5.3.3",
         "vite": "^5.0.0",
         "vitest": "^1.0.0",
@@ -617,6 +616,8 @@
     "vue-component-type-helpers": ["vue-component-type-helpers@2.2.12", "", {}, "sha512-YbGqHZ5/eW4SnkPNR44mKVc6ZKQoRs/Rux1sxC6rdwXb4qpbOSYfDr9DsTHolOTGmIKgM9j141mZbBeg05R1pw=="],
 
     "vue-template-compiler": ["vue-template-compiler@2.7.16", "", { "dependencies": { "de-indent": "^1.0.2", "he": "^1.2.0" } }, "sha512-AYbUWAJHLGGQM7+cNTELw+KsOG9nl2CnSv467WobS5Cv9uk3wFcnr1Etsz2sEIHEZvw1U+o9mRlEO6QbZvUPGQ=="],
+
+    "vue-toastification": ["vue-toastification@2.0.0-rc.5", "", { "peerDependencies": { "vue": "^3.0.2" } }, "sha512-q73e5jy6gucEO/U+P48hqX+/qyXDozAGmaGgLFm5tXX4wJBcVsnGp4e/iJqlm9xzHETYOilUuwOUje2Qg1JdwA=="],
 
     "vue-tsc": ["vue-tsc@1.8.27", "", { "dependencies": { "@volar/typescript": "~1.11.1", "@vue/language-core": "1.8.27", "semver": "^7.5.4" }, "peerDependencies": { "typescript": "*" }, "bin": { "vue-tsc": "bin/vue-tsc.js" } }, "sha512-WesKCAZCRAbmmhuGl3+VrdWItEvfoFIPXOvUJkjULi+x+6G/Dy69yO3TBRJDr9eUlmsNAwVmxsNZxvHKzbkKdg=="],
 

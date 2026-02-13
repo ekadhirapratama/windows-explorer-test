@@ -73,6 +73,7 @@ import { ref, computed, watch } from 'vue'
 import type { Folder, File } from '@shared/types/folder'
 import { api } from '../../services/api'
 import { useSearch } from '../../composables/useSearch'
+import { useToast } from '../../composables/useToast'
 import ContentItem from './ContentItem.vue'
 
 const props = defineProps<{
@@ -96,6 +97,9 @@ const {
   isSearchActive,
   clearSearch
 } = useSearch()
+
+// Toast notifications
+const { error: showError } = useToast()
 
 // Computed properties
 const itemCount = computed(() => {
@@ -134,6 +138,7 @@ async function loadFolderContents(folderId: string) {
     files.value = response.files
   } catch (err: any) {
     error.value = err.message || 'Failed to load folder contents'
+    showError('Failed to load folder contents')
     console.error('Error loading folder contents:', err)
   } finally {
     isLoading.value = false

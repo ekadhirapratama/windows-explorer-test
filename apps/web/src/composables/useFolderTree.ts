@@ -1,6 +1,7 @@
 import { ref, reactive, computed } from 'vue'
 import type { Folder, File, FolderTree } from '@shared/types/folder'
 import { api } from '../services/api'
+import { useToast } from './useToast'
 
 /**
  * Composable for managing folder tree state and operations
@@ -14,6 +15,9 @@ export function useFolderTree() {
     const loadingFolderIds = reactive(new Set<string>())
     const isLoadingRoots = ref(false)
     const error = ref<string | null>(null)
+
+    // Toast notifications
+    const { error: showError } = useToast()
 
     // Computed
     const selectedFolder = computed(() => {
@@ -50,6 +54,7 @@ export function useFolderTree() {
             }))
         } catch (err: any) {
             error.value = err.message || 'Failed to load folders'
+            showError('Failed to load folders')
             console.error('Error loading root folders:', err)
         } finally {
             isLoadingRoots.value = false
@@ -82,6 +87,7 @@ export function useFolderTree() {
             }
         } catch (err: any) {
             error.value = err.message || 'Failed to load folder children'
+            showError('Failed to load folder contents')
             console.error('Error loading folder children:', err)
         } finally {
             loadingFolderIds.delete(folderId)
