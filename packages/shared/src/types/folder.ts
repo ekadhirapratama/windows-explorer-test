@@ -13,6 +13,8 @@ export interface Folder {
     hasChildren: boolean
     createdAt?: Date
     updatedAt?: Date
+    category?: 'quick-access' | 'drive' | null
+    icon?: string | null
 }
 
 /**

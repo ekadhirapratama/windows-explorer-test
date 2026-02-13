@@ -14,6 +14,8 @@ export class FolderRepository implements IFolderRepository {
                 parentId: folders.parentId,
                 createdAt: folders.createdAt,
                 updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon,
                 // Subquery to check if folder has children (either folders or files)
                 hasChildren: sql<boolean>`(
           EXISTS(SELECT 1 FROM folders f WHERE f.parent_id = folders.id)
@@ -34,6 +36,8 @@ export class FolderRepository implements IFolderRepository {
                 parentId: folders.parentId,
                 createdAt: folders.createdAt,
                 updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon,
                 hasChildren: sql<boolean>`(
           EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.parentId})
         )`
@@ -61,6 +65,8 @@ export class FolderRepository implements IFolderRepository {
                 parentId: folders.parentId,
                 createdAt: folders.createdAt,
                 updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon,
                 hasChildren: sql<boolean>`(
           EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
         )`
@@ -81,6 +87,8 @@ export class FolderRepository implements IFolderRepository {
                 parentId: folders.parentId,
                 createdAt: folders.createdAt,
                 updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon,
                 hasChildren: sql<boolean>`(
           EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
         )`
