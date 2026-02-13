@@ -51,6 +51,8 @@
         v-for="folder in folders"
         :key="'folder-' + folder.id"
         :item="folder"
+        :selected="selectedItem?.id === folder.id"
+        @click="handleItemClick"
         @double-click="handleFolderDoubleClick"
       />
 
@@ -59,6 +61,8 @@
         v-for="file in files"
         :key="'file-' + file.id"
         :item="file"
+        :selected="selectedItem?.id === file.id"
+        @click="handleItemClick"
       />
     </div>
   </div>
@@ -81,6 +85,7 @@ const folders = ref<Folder[]>([])
 const files = ref<File[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+const selectedItem = ref<{ id: string; type: 'folder' | 'file' } | null>(null)
 
 // Search composable - Global state
 const {
@@ -147,8 +152,9 @@ function handleFolderDoubleClick(item: Folder | File) {
   }
 }
 
-function handleSearchClear() {
-  clearSearch()
+function handleItemClick(item: Folder | File) {
+  const itemType = 'extension' in item ? 'file' : 'folder'
+  selectedItem.value = { id: item.id, type: itemType }
 }
 
 

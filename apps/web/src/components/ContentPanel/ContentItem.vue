@@ -1,7 +1,10 @@
 <template>
   <div 
     class="content-item"
-    :class="{ 'content-item--folder': isFolder }"
+    :class="{ 
+      'content-item--folder': isFolder,
+      'content-item--selected': selected 
+    }"
     @click="handleClick"
     @dblclick="handleDoubleClick"
   >
@@ -24,6 +27,7 @@ import FileIcon from '../FileIcon/FileIcon.vue'
 
 const props = defineProps<{
   item: Folder | File
+  selected?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -84,17 +88,8 @@ function handleDoubleClick() {
   color: #fbbf24; /* Yellow for folders */
 }
 
-.content-item__name {
-  font-size: var(--font-size-sm);
-  text-align: center;
-  word-break: break-word;
-  hyphens: auto;
-  max-width: 100%;
-  line-height: 1.3;
-  max-height: 2.6em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.content-item--selected {
+  background-color: var(--color-accent-light);
+  border: 2px solid var(--color-accent);
 }
 </style>

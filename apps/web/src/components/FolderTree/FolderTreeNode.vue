@@ -12,7 +12,7 @@
       :style="{ '--depth': depth }">
       <!-- Expand/Collapse Arrow -->
       <button
-        v-if="folder.hasChildren"
+        v-if="folder.hasChildren && !expandDisabled"
         class="folder-tree-node__toggle"
         @click.stop="handleToggle"
         :aria-label="isExpanded ? 'Collapse folder' : 'Expand folder'"
@@ -30,7 +30,10 @@
       <span v-else class="folder-tree-node__spacer"></span>
 
       <!-- Folder Icon -->
-      <svg class="folder-tree-node__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <span v-if="folder.icon" class="material-icons folder-tree-node__icon">
+        {{ folder.icon }}
+      </span>
+      <svg v-else class="folder-tree-node__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
       </svg>
 
@@ -68,6 +71,7 @@ const props = defineProps<{
   selectedFolderId: string | null
   expandedFolderIds: Set<string>
   loadingFolderIds: Set<string>
+  expandDisabled?: boolean
 }>()
 
 const emit = defineEmits<{

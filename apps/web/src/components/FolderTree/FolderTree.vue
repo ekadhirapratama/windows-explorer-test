@@ -18,22 +18,43 @@
 
     <!-- Tree Content -->
     <div v-else class="folder-tree__content">
-      <FolderTreeNode
-        v-for="folder in rootFolders"
-        :key="folder.id"
-        :folder="folder"
-        :selected-folder-id="selectedFolderId"
-        :expanded-folder-ids="expandedFolderIds"
-        :loading-folder-ids="loadingFolderIds"
-        @toggle="handleToggle"
-        @select="handleSelect"
-      />
+      <!-- Quick Access Section -->
+      <section v-if="quickAccessFolders.length > 0" class="folder-tree__section">
+        <h3 class="folder-tree__section-title">Quick Access</h3>
+        <FolderTreeNode
+          v-for="folder in quickAccessFolders"
+          :key="folder.id"
+          :folder="folder"
+          :selected-folder-id="selectedFolderId"
+          :expanded-folder-ids="expandedFolderIds"
+          :loading-folder-ids="loadingFolderIds"
+          :expand-disabled="true"
+          @toggle="handleToggle"
+          @select="handleSelect"
+        />
+      </section>
+      
+      <!-- Drive Section -->
+      <section v-if="driveFolders.length > 0" class="folder-tree__section">
+        <h3 class="folder-tree__section-title">This PC</h3>
+        <FolderTreeNode
+          v-for="folder in driveFolders"
+          :key="folder.id"
+          :folder="folder"
+          :selected-folder-id="selectedFolderId"
+          :expanded-folder-ids="expandedFolderIds"
+          :loading-folder-ids="loadingFolderIds"
+          :expand-disabled="false"
+          @toggle="handleToggle"
+          @select="handleSelect"
+        />
+      </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, inject } from 'vue'
+import { onMounted, inject, computed } from 'vue'
 import FolderTreeNode from './FolderTreeNode.vue'
 import type { Folder } from '@shared/types/folder'
 
@@ -59,6 +80,15 @@ const {
   isFolderExpanded,
   isFolderLoading
 } = folderTree
+
+// Computed properties for categorized folders
+const quickAccessFolders = computed(() => 
+  rootFolders.value.filter((folder: Folder) => folder.category === 'quick-access')
+)
+
+const driveFolders = computed(() => 
+  rootFolders.value.filter((folder: Folder) => folder.category === 'drive')
+)
 
 // Create reactive refs for passing to child components
 import { ref as vueRef } from 'vue'
@@ -123,7 +153,6 @@ function handleSelect(folderId: string) {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--spacing-sm) 0;
 }
 
 .folder-tree__loading,
@@ -137,9 +166,18 @@ function handleSelect(folderId: string) {
   font-size: var(--font-size-sm);
 }
 
-.folder-tree__error {
-  color: #dc2626;
-  flex-direction: column;
-  text-align: center;
+.folder-tree__section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.folder-tree__section-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
 }
 </style>
