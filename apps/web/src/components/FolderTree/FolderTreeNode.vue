@@ -27,10 +27,10 @@
           <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <span v-else class="folder-tree-node__spacer"></span>
+      <span v-else-if="!expandDisabled" class="folder-tree-node__spacer"></span>
 
       <!-- Folder Icon -->
-      <span v-if="folder.icon" class="material-icons folder-tree-node__icon">
+      <span v-if="folder.icon" class="material-icons-round folder-tree-node__icon">
         {{ folder.icon }}
       </span>
       <svg v-else class="folder-tree-node__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -53,6 +53,7 @@
         :depth="depth + 1"
         :selected-folder-id="selectedFolderId"
         :expanded-folder-ids="expandedFolderIds"
+        :expand-disabled="expandDisabled"
         :loading-folder-ids="loadingFolderIds"
         @toggle="$emit('toggle', $event)"
         @select="$emit('select', $event)"
@@ -109,6 +110,11 @@ function handleClick() {
   transition: background-color var(--transition-fast);
   border-radius: 4px;
   margin: 1px 4px;
+}
+
+.folder-tree-node__item .material-icons-round {
+  padding-right: 1.5rem;
+  padding-bottom: 1.5rem;
 }
 
 .folder-tree-node__item:hover {
