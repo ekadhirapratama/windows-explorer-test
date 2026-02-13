@@ -92,4 +92,26 @@ export class FileRepository implements IFileRepository {
 
         return copied as File
     }
+
+    async rename(fileId: string, newName: string): Promise<File> {
+        const trimmedName = newName.trim()
+        if (!trimmedName) {
+            throw new Error('File name cannot be empty')
+        }
+
+        const [updated] = await db
+            .update(files)
+            .set({
+                name: trimmedName,
+                updatedAt: new Date()
+            })
+            .where(eq(files.id, fileId))
+            .returning()
+
+        if (!updated) {
+            throw new Error('File not found')
+        }
+
+        return updated as File
+    }
 }

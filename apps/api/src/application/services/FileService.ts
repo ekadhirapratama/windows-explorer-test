@@ -112,4 +112,16 @@ export class FileService {
 
         await this.fileRepository.deleteById(fileId)
     }
+
+    /**
+     * Rename a file
+     */
+    async renameFile(fileId: string, newName: string): Promise<FileEntity> {
+        const file = await this.fileRepository.findById(fileId)
+        if (!file) {
+            throw new Error('File not found')
+        }
+
+        return await this.fileRepository.rename(fileId, newName)
+    }
 }

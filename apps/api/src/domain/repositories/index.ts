@@ -53,6 +53,13 @@ export interface IFolderRepository {
      * @param targetParentId - Destination parent folder ID
      */
     copy(folderId: string, targetParentId: string | null): Promise<Folder>
+
+    /**
+     * Rename a folder
+     * @param folderId - Folder ID
+     * @param newName - New name for the folder
+     */
+    rename(folderId: string, newName: string): Promise<Folder>
 }
 
 /**
@@ -103,4 +110,11 @@ export interface IFileRepository {
      * @param newStoragePath - Path for the copied physical file
      */
     copy(fileId: string, targetFolderId: string, newStoragePath: string): Promise<File>
+
+    /**
+     * Rename a file
+     * @param fileId - File ID
+     * @param newName - New name for the file (without extension)
+     */
+    rename(fileId: string, newName: string): Promise<File>
 }

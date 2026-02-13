@@ -109,4 +109,16 @@ export class FolderService {
 
         return copiedFolder
     }
+
+    /**
+     * Rename a folder
+     */
+    async renameFolder(folderId: string, newName: string): Promise<Folder> {
+        const folder = await this.folderRepository.findById(folderId)
+        if (!folder) {
+            throw new Error('Folder not found')
+        }
+
+        return await this.folderRepository.rename(folderId, newName)
+    }
 }

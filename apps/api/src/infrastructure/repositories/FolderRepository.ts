@@ -76,6 +76,39 @@ export class FolderRepository implements IFolderRepository {
         }
     }
 
+    async rename(folderId: string, newName: string): Promise<Folder> {
+        const trimmedName = newName.trim()
+        if (!trimmedName) {
+            throw new Error('Folder name cannot be empty')
+        }
+
+        const [updated] = await db
+            .update(folders)
+            .set({
+                name: trimmedName,
+                updatedAt: new Date()
+            })
+            .where(eq(folders.id, folderId))
+            .returning({
+                id: folders.id,
+                name: folders.name,
+                parentId: folders.parentId,
+                createdAt: folders.createdAt,
+                updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon
+            })
+
+        if (!updated) {
+            throw new Error('Folder not found')
+        }
+
+        return {
+            ...(updated as Omit<Folder, 'hasChildren'>),
+            hasChildren: false // We don't know without checking, but this is fine for rename
+        }
+    }
+
     async findRoots(): Promise<Folder[]> {
         // Select root folders with hasChildren flag
         const results = await db

@@ -91,5 +91,36 @@ export const fileRoutes = (app: Elysia) => {
                     tags: ['files']
                 }
             })
+
+            // PATCH /api/v1/files/:id/rename - Rename a file
+            .patch('/:id/rename', async ({ params, body }) => {
+                try {
+                    const renamed = await fileService.renameFile(params.id, body.name)
+                    return {
+                        data: renamed
+                    }
+                } catch (error: any) {
+                    if (error.message === 'File not found') {
+                        throw new Error('File not found')
+                    }
+                    if (error.message === 'File name cannot be empty') {
+                        throw new Error('File name cannot be empty')
+                    }
+                    console.error('Error renaming file:', error)
+                    throw new Error('Failed to rename file')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                body: t.Object({
+                    name: t.String()
+                }),
+                detail: {
+                    summary: 'Rename a file',
+                    description: 'Renames a file to a new name (without extension)',
+                    tags: ['files']
+                }
+            })
     )
 }

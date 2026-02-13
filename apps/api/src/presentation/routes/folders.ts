@@ -140,5 +140,36 @@ export const folderRoutes = (app: Elysia) => {
                     tags: ['folders']
                 }
             })
+
+            // PATCH /api/v1/folders/:id/rename - Rename a folder
+            .patch('/:id/rename', async ({ params, body }) => {
+                try {
+                    const renamed = await folderService.renameFolder(params.id, body.name)
+                    return {
+                        data: renamed
+                    }
+                } catch (error: any) {
+                    if (error.message === 'Folder not found') {
+                        throw new Error('Folder not found')
+                    }
+                    if (error.message === 'Folder name cannot be empty') {
+                        throw new Error('Folder name cannot be empty')
+                    }
+                    console.error('Error renaming folder:', error)
+                    throw new Error('Failed to rename folder')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                body: t.Object({
+                    name: t.String()
+                }),
+                detail: {
+                    summary: 'Rename a folder',
+                    description: 'Renames a folder to a new name',
+                    tags: ['folders']
+                }
+            })
     )
 }

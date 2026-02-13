@@ -74,6 +74,16 @@ const app = new Elysia()
             return { error: 'Folder name is required' }
         }
 
+        if (error.message === 'Folder name cannot be empty') {
+            set.status = 400
+            return { error: 'Folder name cannot be empty' }
+        }
+
+        if (error.message === 'File name cannot be empty') {
+            set.status = 400
+            return { error: 'File name cannot be empty' }
+        }
+
         set.status = 500
         return { error: 'Internal server error' }
     })
