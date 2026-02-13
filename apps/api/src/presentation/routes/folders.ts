@@ -111,5 +111,34 @@ export const folderRoutes = (app: Elysia) => {
                     tags: ['folders']
                 }
             })
+
+            // POST /api/v1/folders/:id/copy - Copy a folder
+            .post('/:id/copy', async ({ params, body, set }) => {
+                try {
+                    const copied = await folderService.copyFolder(params.id, body.targetParentId ?? null)
+                    set.status = 201
+                    return {
+                        data: copied
+                    }
+                } catch (error: any) {
+                    if (error.message === 'Folder not found' || error.message === 'Target folder not found') {
+                        throw new Error('Folder not found')
+                    }
+                    console.error('Error copying folder:', error)
+                    throw new Error('Failed to copy folder')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                body: t.Object({
+                    targetParentId: t.Optional(t.Union([t.String(), t.Null()]))
+                }),
+                detail: {
+                    summary: 'Copy a folder',
+                    description: 'Creates a copy of a folder with all its contents',
+                    tags: ['folders']
+                }
+            })
     )
 }

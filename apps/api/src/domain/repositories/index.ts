@@ -46,6 +46,13 @@ export interface IFolderRepository {
      * @param id - Folder ID
      */
     deleteById(id: string): Promise<boolean>
+
+    /**
+     * Copy a folder (creates duplicate with new name)
+     * @param folderId - Original folder ID
+     * @param targetParentId - Destination parent folder ID
+     */
+    copy(folderId: string, targetParentId: string | null): Promise<Folder>
 }
 
 /**
@@ -76,4 +83,24 @@ export interface IFileRepository {
      * @param id - File ID
      */
     deleteById(id: string): Promise<boolean>
+
+    /**
+     * Create a new file
+     */
+    create(data: {
+        name: string
+        extension: string
+        mimeType: string | null
+        size: string | null
+        storagePath: string | null
+        folderId: string
+    }): Promise<File>
+
+    /**
+     * Copy a file (creates duplicate with new ID)
+     * @param fileId - Original file ID
+     * @param targetFolderId - Destination folder ID
+     * @param newStoragePath - Path for the copied physical file
+     */
+    copy(fileId: string, targetFolderId: string, newStoragePath: string): Promise<File>
 }

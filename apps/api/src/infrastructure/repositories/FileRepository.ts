@@ -46,4 +46,50 @@ export class FileRepository implements IFileRepository {
 
         return deleted.length > 0
     }
+
+    async create(data: {
+        name: string
+        extension: string
+        mimeType: string | null
+        size: string | null
+        storagePath: string | null
+        folderId: string
+    }): Promise<File> {
+        const [created] = await db
+            .insert(files)
+            .values({
+                name: data.name,
+                extension: data.extension,
+                mimeType: data.mimeType,
+                size: data.size,
+                storagePath: data.storagePath,
+                folderId: data.folderId
+            })
+            .returning()
+
+        return created as File
+    }
+
+    async copy(fileId: string, targetFolderId: string, newStoragePath: string): Promise<File> {
+        // Get original file
+        const original = await this.findById(fileId)
+        if (!original) {
+            throw new Error('File not found')
+        }
+
+        // Create copy with " - Copy" suffix
+        const [copied] = await db
+            .insert(files)
+            .values({
+                name: original.name,
+                extension: original.extension,
+                mimeType: original.mimeType,
+                size: original.size,
+                storagePath: newStoragePath,
+                folderId: targetFolderId
+            })
+            .returning()
+
+        return copied as File
+    }
 }

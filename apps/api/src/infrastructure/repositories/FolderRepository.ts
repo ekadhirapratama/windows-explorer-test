@@ -44,6 +44,38 @@ export class FolderRepository implements IFolderRepository {
         return deleted.length > 0
     }
 
+    async copy(folderId: string, targetParentId: string | null): Promise<Folder> {
+        // Get original folder
+        const original = await this.findById(folderId)
+        if (!original) {
+            throw new Error('Folder not found')
+        }
+
+        // Create copy with " - Copy" suffix
+        const [copied] = await db
+            .insert(folders)
+            .values({
+                name: `${original.name} - Copy`,
+                parentId: targetParentId,
+                category: original.category,
+                icon: original.icon
+            })
+            .returning({
+                id: folders.id,
+                name: folders.name,
+                parentId: folders.parentId,
+                createdAt: folders.createdAt,
+                updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon
+            })
+
+        return {
+            ...(copied as Omit<Folder, 'hasChildren'>),
+            hasChildren: false
+        }
+    }
+
     async findRoots(): Promise<Folder[]> {
         // Select root folders with hasChildren flag
         const results = await db

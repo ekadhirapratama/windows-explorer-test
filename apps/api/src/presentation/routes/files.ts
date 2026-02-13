@@ -12,6 +12,63 @@ export const fileRoutes = (app: Elysia) => {
 
     return app.group('/api/v1/files', (app) =>
         app
+            // POST /api/v1/files/upload - Upload a file
+            .post('/upload', async ({ body, set }) => {
+                try {
+                    const uploaded = await fileService.uploadFile(body.file, body.folderId ?? null)
+                    set.status = 201
+                    return {
+                        data: uploaded
+                    }
+                } catch (error: any) {
+                    if (error.message === 'File size exceeds 2MB limit') {
+                        set.status = 400
+                        return { error: 'File size exceeds 2MB limit' }
+                    }
+                    console.error('Error uploading file:', error)
+                    throw new Error('Failed to upload file')
+                }
+            }, {
+                body: t.Object({
+                    file: t.File(),
+                    folderId: t.Optional(t.Union([t.String(), t.Null()]))
+                }),
+                detail: {
+                    summary: 'Upload a file',
+                    description: 'Uploads a file to a specific folder (max 2MB)',
+                    tags: ['files']
+                }
+            })
+
+            // POST /api/v1/files/:id/copy - Copy a file
+            .post('/:id/copy', async ({ params, body, set }) => {
+                try {
+                    const copied = await fileService.copyFile(params.id, body.targetFolderId ?? null)
+                    set.status = 201
+                    return {
+                        data: copied
+                    }
+                } catch (error: any) {
+                    if (error.message === 'File not found') {
+                        throw new Error('File not found')
+                    }
+                    console.error('Error copying file:', error)
+                    throw new Error('Failed to copy file')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                body: t.Object({
+                    targetFolderId: t.Optional(t.Union([t.String(), t.Null()]))
+                }),
+                detail: {
+                    summary: 'Copy a file',
+                    description: 'Creates a copy of a file in the target folder',
+                    tags: ['files']
+                }
+            })
+
             // DELETE /api/v1/files/:id - Delete a file
             .delete('/:id', async ({ params }) => {
                 try {

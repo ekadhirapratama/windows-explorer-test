@@ -64,6 +64,16 @@ const app = new Elysia()
             return { error: 'File not found' }
         }
 
+        if (error.message === 'File size exceeds 2MB limit') {
+            set.status = 400
+            return { error: 'File size exceeds 2MB limit' }
+        }
+
+        if (error.message === 'Folder name is required') {
+            set.status = 400
+            return { error: 'Folder name is required' }
+        }
+
         set.status = 500
         return { error: 'Internal server error' }
     })

@@ -20,6 +20,8 @@ export interface File {
     name: string
     extension: string
     mimeType: string | null
+    size?: string | null
+    storagePath?: string | null
     folderId: string
     createdAt?: Date
     updatedAt?: Date
