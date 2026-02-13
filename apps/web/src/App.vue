@@ -1,5 +1,16 @@
 <template>
-  <ExplorerLayout :breadcrumb-items="breadcrumbItems">
+  <ExplorerLayout 
+    :breadcrumb-items="breadcrumbItems"
+    :has-selection="hasSelection"
+    :has-clipboard="hasClipboard"
+    @new-folder="openCreateFolderModal"
+    @upload-file="openUploadFileModal"
+    @cut="handleCut"
+    @copy="handleCopy"
+    @paste="handlePaste"
+    @rename="openRenameModal"
+    @delete="handleDelete"
+  >
     <template #sidebar>
       <FolderTree 
         @select-folder="handleFolderSelect"
@@ -11,25 +22,63 @@
         :selected-folder="selectedFolder"
         :breadcrumb-items="breadcrumbItems"
         :on-navigate-to-folder="handleNavigateToFolder"
+        @item-selected="handleItemSelected"
       />
     </template>
   </ExplorerLayout>
+
+  <!-- Modals -->
+  <CreateFolderModal
+    :is-open="showCreateFolderModal"
+    :current-folder-id="selectedFolder?.id || null"
+    @close="showCreateFolderModal = false"
+    @created="handleFolderCreated"
+  />
+
+  <UploadFileModal
+    :is-open="showUploadFileModal"
+    :current-folder-id="selectedFolder?.id || null"
+    @close="showUploadFileModal = false"
+    @uploaded="handleFileUploaded"
+  />
+
+  <RenameModal
+    :is-open="showRenameModal"
+    :item-id="selectedItem?.id || null"
+    :item-type="selectedItem?.type || 'folder'"
+    :current-name="selectedItem?.name || ''"
+    @close="showRenameModal = false"
+    @renamed="handleRenamed"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, provide, computed, watch } from 'vue'
-import type { Folder } from '@shared/types/folder'
+import type { Folder, File } from '@shared/types/folder'
 import type { BreadcrumbItem } from './components/Breadcrumb/Breadcrumb.vue'
 import ExplorerLayout from './components/Layout/ExplorerLayout.vue'
 import FolderTree from './components/FolderTree/FolderTree.vue'
 import ContentPanel from './components/ContentPanel/ContentPanel.vue'
+import CreateFolderModal from './components/Modal/CreateFolderModal.vue'
+import UploadFileModal from './components/Modal/UploadFileModal.vue'
+import RenameModal from './components/Modal/RenameModal.vue'
 import { useFolderTree } from './composables/useFolderTree'
+import { useExplorerState } from './composables/useExplorerState'
+import { useToast } from './composables/useToast'
+import { api } from './services/api'
 
 const folderTreeComposable = useFolderTree()
-const { selectedFolder, selectFolder, toggleFolder, findFolderById, rootFolders } = folderTreeComposable
+const { selectedFolder, selectFolder, toggleFolder, findFolderById, rootFolders, loadRootFolders } = folderTreeComposable
+const { selectedItem, clipboard, hasSelection, hasClipboard, selectItem, clearSelection, cut, copy, clearClipboard } = useExplorerState()
+const { success, error: showError } = useToast()
 
 // Provide the composable to child components
 provide('folderTree', folderTreeComposable)
+
+// Modal state
+const showCreateFolderModal = ref(false)
+const showUploadFileModal = ref(false)
+const showRenameModal = ref(false)
 
 // Breadcrumb tracking
 const breadcrumbItems = ref<BreadcrumbItem[]>([])
@@ -92,6 +141,131 @@ async function expandParentChain(folder: Folder) {
   if (parent) {
     await toggleFolder(parent.id, true) // Force expand
     await expandParentChain(parent) // Recursively expand parents
+  }
+}
+
+/**
+ * Handle item selection from ContentPanel
+ */
+function handleItemSelected(item: { id: string; type: 'folder' | 'file'; name: string; data: Folder | File }) {
+  selectItem(item)
+}
+
+/**
+ * Modal handlers
+ */
+function openCreateFolderModal() {
+  showCreateFolderModal.value = true
+}
+
+function openUploadFileModal() {
+  showUploadFileModal.value = true
+}
+
+function openRenameModal() {
+  if (!selectedItem.value) return
+  showRenameModal.value = true
+}
+
+async function handleFolderCreated() {
+  // Reload current folder or root folders
+  if (selectedFolder.value) {
+    await loadRootFolders()
+  }
+}
+
+async function handleFileUploaded() {
+  // Reload current folder
+  if (selectedFolder.value) {
+    await loadRootFolders()
+  }
+}
+
+async function handleRenamed() {
+  // Reload to reflect changes
+  await loadRootFolders()
+  clearSelection()
+}
+
+/**
+ * Action handlers
+ */
+function handleCut() {
+  if (!selectedItem.value) return
+  cut({
+    id: selectedItem.value.id,
+    type: selectedItem.value.type,
+    name: selectedItem.value.name
+  })
+  success(`${selectedItem.value.name} cut to clipboard`)
+}
+
+function handleCopy() {
+  if (!selectedItem.value) return
+  copy({
+    id: selectedItem.value.id,
+    type: selectedItem.value.type,
+    name: selectedItem.value.name
+  })
+  success(`${selectedItem.value.name} copied to clipboard`)
+}
+
+async function handlePaste() {
+  if (!clipboard.value) return
+
+  const targetFolderId = selectedFolder.value?.id || null
+
+  try {
+    if (clipboard.value.action === 'cut') {
+      // Move operation
+      if (clipboard.value.item.type === 'folder') {
+        await api.moveFolder(clipboard.value.item.id, targetFolderId)
+        success(`Folder moved successfully`)
+      } else {
+        await api.moveFile(clipboard.value.item.id, targetFolderId)
+        success(`File moved successfully`)
+      }
+    } else {
+      // Copy operation
+      if (clipboard.value.item.type === 'folder') {
+        await api.copyFolder(clipboard.value.item.id, targetFolderId)
+        success(`Folder copied successfully`)
+      } else {
+        await api.copyFile(clipboard.value.item.id, targetFolderId)
+        success(`File copied successfully`)
+      }
+    }
+
+    clearClipboard()
+    await loadRootFolders()
+  } catch (err: any) {
+    showError(err.message || 'Failed to paste item')
+  }
+}
+
+async function handleDelete() {
+  if (!selectedItem.value) return
+
+  // Confirmation dialog
+  const confirmed = confirm(
+    `Are you sure you want to delete "${selectedItem.value.name}"?\n\nThis action cannot be undone.`
+  )
+
+  if (!confirmed) return
+
+  try {
+    if (selectedItem.value.type === 'folder') {
+      await api.deleteFolder(selectedItem.value.id)
+      success('Folder deleted successfully')
+    } else {
+      await api.deleteFile(selectedItem.value.id)
+      success('File deleted successfully')
+    }
+
+    clearSelection()
+    await loadRootFolders()
+  } catch (err: any) {
+    showError(err.message || 'Failed to delete item')
   }
 }
 </script>

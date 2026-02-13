@@ -1,7 +1,18 @@
 <template>
   <div class="app-container explorer-layout" :class="{ dark: isDark }">
     <!-- Action Toolbar -->
-    <ActionToolbar @new="$emit('new')" @sort="$emit('sort')" @"toggle-view"="$emit('toggle-view')" />
+    <ActionToolbar 
+      :has-selection="hasSelection"
+      :has-clipboard="hasClipboard"
+      @new-folder="$emit('new-folder')"
+      @upload-file="$emit('upload-file')"
+      @cut="$emit('cut')"
+      @copy="$emit('copy')"
+      @paste="$emit('paste')"
+      @rename="$emit('rename')"
+      @delete="$emit('delete')"
+      @sort="$emit('sort')" 
+    />
 
     <!-- Navigation Bar (Breadcrumb + Search) -->
     <NavigationBar :items="breadcrumbItems" @navigate="handleBreadcrumbNavigate" />
@@ -38,9 +49,15 @@ const isSidebarOpen = ref(false)
 const isDark = ref(false)
 
 // breadcrumbItems will be provided by parent via prop
-const props = defineProps<{ breadcrumbItems?: any[] }>()
+const props = defineProps<{ 
+  breadcrumbItems?: any[]
+  hasSelection?: boolean
+  hasClipboard?: boolean
+}>()
 import { computed } from 'vue'
 const breadcrumbItems = computed(() => props.breadcrumbItems ?? [])
+const hasSelection = computed(() => props.hasSelection ?? false)
+const hasClipboard = computed(() => props.hasClipboard ?? false)
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
@@ -71,7 +88,7 @@ function handleBreadcrumbNavigate(item: any) {
   emit('navigate', item)
 }
 
-const emit = defineEmits(['navigate','new','sort','toggle-view'])
+const emit = defineEmits(['navigate','new-folder','upload-file','cut','copy','paste','rename','delete','sort'])
 </script>
 
 <style scoped>

@@ -82,6 +82,10 @@ const props = defineProps<{
   onNavigateToFolder?: (folderId: string) => void
 }>()
 
+const emit = defineEmits<{
+  itemSelected: [item: { id: string; type: 'folder' | 'file'; name: string; data: Folder | File }]
+}>()
+
 const folders = ref<Folder[]>([])
 const files = ref<File[]>([])
 const isLoading = ref(false)
@@ -160,6 +164,18 @@ function handleFolderDoubleClick(item: Folder | File) {
 function handleItemClick(item: Folder | File) {
   const itemType = 'extension' in item ? 'file' : 'folder'
   selectedItem.value = { id: item.id, type: itemType }
+  
+  // Emit to parent with full item data
+  emit('itemSelected', {
+    id: item.id,
+    type: itemType,
+    name: item.name,
+    data: item
+  })
+}
+
+function handleSearchClear() {
+  clearSearch()
 }
 
 

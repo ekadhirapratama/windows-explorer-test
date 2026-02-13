@@ -26,7 +26,7 @@
       <button class="btn-icon" :disabled="!hasSelection" title="Copy" @click="$emit('copy')">
         <span class="material-icons-round text-xl">content_copy</span>
       </button>
-      <button class="btn-icon" title="Paste" disabled>
+      <button class="btn-icon" :disabled="!hasClipboard" title="Paste" @click="$emit('paste')">
         <span class="material-icons-round text-xl">content_paste</span>
       </button>
       <button class="btn-icon" :disabled="!hasSelection" title="Rename" @click="$emit('rename')">
@@ -55,12 +55,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const props = defineProps<{ hasSelection?: boolean }>()
+const props = defineProps<{ 
+  hasSelection?: boolean
+  hasClipboard?: boolean
+}>()
 const emit = defineEmits<{
   'new-folder': []
   'upload-file': []
   cut: []
   copy: []
+  paste: []
   rename: []
   share: []
   delete: []
@@ -69,6 +73,7 @@ const emit = defineEmits<{
 }>()
 
 const hasSelection = props.hasSelection ?? false
+const hasClipboard = props.hasClipboard ?? false
 const showDropdown = ref(false)
 
 function toggleDropdown() {
