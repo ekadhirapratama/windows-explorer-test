@@ -35,10 +35,7 @@
     </main>
 
     <!-- Status Bar -->
-    <StatusBar 
-      :total-items="totalItems"
-      :selected-count="selectedCount"
-    />
+    <StatusBar />
   </div>
 </template>
 
@@ -58,8 +55,6 @@ const props = defineProps<{
   breadcrumbItems?: any[]
   hasSelection?: boolean
   hasClipboard?: boolean
-  totalItems?: number
-  selectedCount?: number
 }>()
 import { computed } from 'vue'
 const breadcrumbItems = computed(() => props.breadcrumbItems ?? [])

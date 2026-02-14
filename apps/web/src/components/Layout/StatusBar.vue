@@ -4,18 +4,18 @@
       <div class="flex items-center">
         <span>{{ totalItems }} items</span>
       </div>
-      <div class="h-3 w-px bg-slate-300"></div>
-      <div v-if="selectedCount > 0" class="flex items-center">
-        <span class="font-medium text-primary">{{ selectedCount }} item{{ selectedCount>1? 's':'' }} selected</span>
-      </div>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ totalItems?: number; selectedCount?: number }>()
-const totalItems = props.totalItems ?? 0
-const selectedCount = props.selectedCount ?? 0
+import { computed } from 'vue'
+import { useExplorerState } from '@/composables/useExplorerState'
+
+const { currentItems, selectedItem } = useExplorerState()
+
+const totalItems = computed(() => currentItems.value.length)
+const selectedCount = computed(() => selectedItem.value ? 1 : 0)
 </script>
 
 <style scoped></style>

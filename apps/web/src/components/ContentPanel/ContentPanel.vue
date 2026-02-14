@@ -90,6 +90,7 @@ import type { Folder, File } from '@shared/types/folder'
 import { api } from '../../services/api'
 import { useSearch } from '../../composables/useSearch'
 import { useToast } from '../../composables/useToast'
+import { useExplorerState } from '../../composables/useExplorerState'
 import ContentItem from './ContentItem.vue'
 
 const props = defineProps<{
@@ -176,10 +177,17 @@ const filteredFiles = computed(() => {
 
 const showFilesFirst = computed(() => sortBy.value === 'type' && sortOrder.value === 'desc')
 
-// Watch item count and emit changes
+const { setCurrentItems } = useExplorerState()
+
+// Watch item count and emit changes (keeping emit for compatibility if needed, but primary sync is via store)
 watch(itemCount, (newCount) => {
   emit('itemCountChanged', newCount)
 }, { immediate: true })
+
+// Sync items to global state
+watch([folders, files], () => {
+  setCurrentItems([...folders.value, ...files.value])
+}, { deep: true, immediate: true })
 
 
 // Watch selected folder and load its contents OR search results

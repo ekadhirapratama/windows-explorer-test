@@ -3,8 +3,6 @@
     :breadcrumb-items="breadcrumbItems"
     :has-selection="hasSelection"
     :has-clipboard="hasClipboard"
-    :total-items="totalItems"
-    :selected-count="selectedCount"
     @new-folder="openCreateFolderModal"
     @upload-file="openUploadFileModal"
     @cut="handleCut"
@@ -31,7 +29,6 @@
         :breadcrumb-items="breadcrumbItems"
         :on-navigate-to-folder="handleNavigateToFolder"
         @item-selected="handleItemSelected"
-        @item-count-changed="handleItemCountChanged"
       />
     </template>
   </ExplorerLayout>
@@ -81,11 +78,6 @@ const { selectedFolder, selectFolder, toggleFolder, findFolderById, rootFolders,
 const { selectedItem, clipboard, hasSelection, hasClipboard, selectItem, clearSelection, cut, copy, clearClipboard } = useExplorerState()
 const { success, error: showError } = useToast()
 
-// Update selected count when selection changes
-watch(selectedItem, (newItem) => {
-  selectedCount.value = newItem ? 1 : 0
-})
-
 // Provide the composable to child components
 provide('folderTree', folderTreeComposable)
 
@@ -100,10 +92,6 @@ const sortOrder = ref<'asc' | 'desc'>('asc')
 
 // Filter state
 const filterType = ref<'folder' | 'file' | 'all'>('all')
-
-// Item counts for status bar
-const totalItems = ref(0)
-const selectedCount = ref(0)
 
 // Content panel refresh key
 const contentPanelKey = ref(0)
@@ -178,13 +166,8 @@ async function expandParentChain(folder: Folder) {
 function handleItemSelected(item: { id: string; type: 'folder' | 'file'; name: string; data: Folder | File }) {
   selectItem(item)
 }
+// handleItemCountChanged removed
 
-/**
- * Handle item count changes from ContentPanel
- */
-function handleItemCountChanged(count: number) {
-  totalItems.value = count
-}
 
 /**
  * Modal handlers
