@@ -4,7 +4,7 @@ A modern, highly responsive Windows Explorer clone built with **Vue 3**, **Elysi
 
 ## 📸 Preview
 
-![image](https://s.digitalservice.id/2wPHnX)
+![image](https://s.digitalservice.id/azc8ux)
 
 ## 🏗️ Architecture
 
