@@ -11,6 +11,7 @@ const selectedItem = ref<{ id: string; type: 'folder' | 'file'; name: string; da
 const clipboard = ref<{ item: { id: string; type: 'folder' | 'file'; name: string }; action: 'cut' | 'copy' } | null>(null)
 const currentItems = ref<Array<Folder | File>>([])
 const currentFolder = ref<Folder | null>(null)
+const isQuickAccessView = ref(true)
 
 export function useExplorerState() {
   const hasSelection = computed(() => selectedItem.value !== null)
@@ -44,12 +45,17 @@ export function useExplorerState() {
     currentFolder.value = folder
   }
 
+  function setQuickAccessView(value: boolean) {
+    isQuickAccessView.value = value
+  }
+
   return {
     // State
     selectedItem,
     clipboard,
     currentItems,
     currentFolder,
+    isQuickAccessView,
 
     // Computed
     hasSelection,
@@ -63,6 +69,7 @@ export function useExplorerState() {
     clearClipboard,
     setCurrentItems,
     setCurrentFolder,
+    setQuickAccessView,
   }
 }
 

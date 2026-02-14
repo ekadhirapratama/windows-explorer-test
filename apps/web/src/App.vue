@@ -3,6 +3,13 @@
     :breadcrumb-items="breadcrumbItems"
     :has-selection="hasSelection"
     :has-clipboard="hasClipboard"
+    :can-go-back="canGoBack"
+    :can-go-forward="canGoForward"
+    :can-go-up="canGoUp"
+    @back="handleBack"
+    @forward="handleForward"
+    @up="handleUp"
+    @navigate="handleBreadcrumbNavigate"
     @new-folder="openCreateFolderModal"
     @upload-file="openUploadFileModal"
     @cut="handleCut"
@@ -22,6 +29,7 @@
       <ContentPanel 
         :key="contentPanelKey"
         :selected-folder="selectedFolder"
+        :is-quick-access-view="isQuickAccessView"
         :filter-type="filterType"
         :breadcrumb-items="breadcrumbItems"
         :on-navigate-to-folder="handleNavigateToFolder"
@@ -56,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, computed, watch } from 'vue'
+import { ref, provide, computed, watch, onMounted } from 'vue'
 import type { Folder, File } from '@shared/types/folder'
 import type { BreadcrumbItem } from './components/Breadcrumb/Breadcrumb.vue'
 import ExplorerLayout from './components/Layout/ExplorerLayout.vue'
@@ -68,12 +76,16 @@ import RenameModal from './components/Modal/RenameModal.vue'
 import { useFolderTree } from './composables/useFolderTree'
 import { useExplorerState } from './composables/useExplorerState'
 import { useToast } from './composables/useToast'
+import { useNavigationHistory } from './composables/useNavigationHistory'
 import { api } from './services/api'
 
 const folderTreeComposable = useFolderTree()
-const { selectedFolder, selectFolder, toggleFolder, findFolderById, rootFolders, loadRootFolders } = folderTreeComposable
-const { selectedItem, clipboard, hasSelection, hasClipboard, selectItem, clearSelection, cut, copy, clearClipboard } = useExplorerState()
+const { selectedFolder, selectFolder, clearSelectedFolder, toggleFolder, findFolderById, rootFolders, loadRootFolders } = folderTreeComposable
+const { selectedItem, clipboard, hasSelection, hasClipboard, selectItem, clearSelection, cut, copy, clearClipboard, isQuickAccessView, setQuickAccessView } = useExplorerState()
 const { success, error: showError } = useToast()
+const { history, pushHistory, goBack, goForward, canGoBack, canGoForward } = useNavigationHistory()
+
+const QUICK_ACCESS_ID = 'quick-access'
 
 // Provide the composable to child components
 provide('folderTree', folderTreeComposable)
@@ -123,21 +135,34 @@ function buildBreadcrumbPath(folder: Folder | null): BreadcrumbItem[] {
  * Watch selected folder and update breadcrumbs
  */
 watch(selectedFolder, (newFolder) => {
+  if (isQuickAccessView.value) {
+    breadcrumbItems.value = [{ id: QUICK_ACCESS_ID, name: 'Quick Access' }]
+    return
+  }
+
   breadcrumbItems.value = buildBreadcrumbPath(newFolder)
 }, { immediate: true })
 
+watch(isQuickAccessView, (quickAccess) => {
+  if (!quickAccess) return
+  breadcrumbItems.value = [{ id: QUICK_ACCESS_ID, name: 'Quick Access' }]
+})
+
+onMounted(() => {
+  if (history.value.length === 0) {
+    navigateToQuickAccess({ pushHistory: true })
+  }
+})
+
 function handleFolderSelect(folder: Folder) {
-  selectFolder(folder.id)
+  navigateToFolder(folder.id, { pushHistory: true })
 }
 
-async function handleNavigateToFolder(folderId: string) {
-  selectFolder(folderId)
-  
-  // Ensure the folder's parent chain is expanded
-  const folder = findFolderById(folderId)
-  if (folder) {
-    await expandParentChain(folder)
-  }
+async function handleNavigateToFolder(folderId: string, options?: { fromSearch?: boolean, parentId?: string | null }) {
+  await navigateToFolder(folderId, { 
+    pushHistory: !options?.fromSearch,
+    parentId: options?.parentId
+  })
 }
 
 /**
@@ -150,6 +175,41 @@ async function expandParentChain(folder: Folder) {
   if (parent) {
     await toggleFolder(parent.id, true) // Force expand
     await expandParentChain(parent) // Recursively expand parents
+  }
+}
+
+async function navigateToFolder(folderId: string, options?: { pushHistory?: boolean, parentId?: string | null }) {
+  setQuickAccessView(false)
+  
+  // If we have parentId, try to ensure parent is expanded first so folder is available in tree
+  if (options?.parentId) {
+    const parent = findFolderById(options.parentId)
+    if (parent) {
+      // Ensure parent hierarchy is visible
+      await expandParentChain(parent)
+      // Ensure parent itself is expanded and children loaded
+      await toggleFolder(parent.id, true)
+    }
+  }
+
+  selectFolder(folderId)
+
+  if (options?.pushHistory !== false) {
+    pushHistory(folderId)
+  }
+
+  const folder = findFolderById(folderId)
+  if (folder) {
+    await expandParentChain(folder)
+  }
+}
+
+function navigateToQuickAccess(options?: { pushHistory?: boolean }) {
+  setQuickAccessView(true)
+  clearSelectedFolder()
+
+  if (options?.pushHistory !== false) {
+    pushHistory(QUICK_ACCESS_ID)
   }
 }
 
@@ -180,6 +240,45 @@ function openRenameModal() {
 
 function handleFilterChange(payload: { filterType: 'folder' | 'file' | 'all' }) {
   filterType.value = payload.filterType
+}
+
+async function handleBack() {
+  const targetId = goBack()
+  if (!targetId) return
+
+  if (targetId === QUICK_ACCESS_ID) {
+    navigateToQuickAccess({ pushHistory: false })
+    return
+  }
+
+  await navigateToFolder(targetId, { pushHistory: false })
+}
+
+async function handleForward() {
+  const targetId = goForward()
+  if (!targetId) return
+
+  if (targetId === QUICK_ACCESS_ID) {
+    navigateToQuickAccess({ pushHistory: false })
+    return
+  }
+
+  await navigateToFolder(targetId, { pushHistory: false })
+}
+
+async function handleUp() {
+  if (!canGoUp.value || !selectedFolder.value?.parentId) return
+  await navigateToFolder(selectedFolder.value.parentId, { pushHistory: true })
+}
+
+function handleBreadcrumbNavigate(crumb: BreadcrumbItem) {
+  if (!crumb?.id) return
+  if (crumb.id === QUICK_ACCESS_ID) {
+    navigateToQuickAccess({ pushHistory: true })
+    return
+  }
+
+  navigateToFolder(crumb.id, { pushHistory: true })
 }
 
 async function handleFolderCreated() {
@@ -289,6 +388,11 @@ async function handleDelete() {
     showError(err.message || 'Failed to delete item')
   }
 }
+
+const canGoUp = computed(() => {
+  if (isQuickAccessView.value) return false
+  return Boolean(selectedFolder.value?.parentId)
+})
 </script>
 
 <style>

@@ -1,13 +1,13 @@
 <template>
   <nav class="nav-bar">
     <div class="nav-actions">
-      <button class="nav-btn" @click="$emit('back')" title="Back">
+      <button class="nav-btn" :disabled="!canGoBack" @click="$emit('back')" title="Back">
         <span class="material-icons-round">arrow_back</span>
       </button>
-      <button class="nav-btn" @click="$emit('forward')" title="Forward">
+      <button class="nav-btn" :disabled="!canGoForward" @click="$emit('forward')" title="Forward">
         <span class="material-icons-round">arrow_forward</span>
       </button>
-      <button class="nav-btn" @click="$emit('up')" title="Up">
+      <button class="nav-btn" :disabled="!canGoUp" @click="$emit('up')" title="Up">
         <span class="material-icons-round">arrow_upward</span>
       </button>
     </div>
@@ -29,7 +29,12 @@ import Breadcrumb from '../Breadcrumb/Breadcrumb.vue'
 import GlobalSearch from '../GlobalSearch/GlobalSearch.vue'
 import { useSearch } from '../../composables/useSearch'
 
-const props = defineProps<{ items?: any[] }>()
+const props = defineProps<{
+  items?: any[]
+  canGoBack?: boolean
+  canGoForward?: boolean
+  canGoUp?: boolean
+}>()
 const emit = defineEmits<{
   back: []
   forward: []
@@ -38,6 +43,10 @@ const emit = defineEmits<{
 }>()
 
 const { isSearchActive, clearSearch } = useSearch()
+
+const canGoBack = computed(() => props.canGoBack ?? false)
+const canGoForward = computed(() => props.canGoForward ?? false)
+const canGoUp = computed(() => props.canGoUp ?? false)
 
 const items = computed(() => {
   if (isSearchActive.value) {

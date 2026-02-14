@@ -124,6 +124,10 @@ export function useFolderTree() {
         selectedFolderId.value = folderId
     }
 
+    function clearSelectedFolder() {
+        selectedFolderId.value = null
+    }
+
     /**
      * Check if folder is expanded
      */
@@ -165,6 +169,7 @@ export function useFolderTree() {
         loadFolderChildren,
         toggleFolder,
         selectFolder,
+        clearSelectedFolder,
         isFolderExpanded,
         isFolderLoading,
         isFolderSelected,

@@ -17,7 +17,16 @@
     />
 
     <!-- Navigation Bar (Breadcrumb + Search) -->
-    <NavigationBar :items="breadcrumbItems" @navigate="handleBreadcrumbNavigate" />
+    <NavigationBar 
+      :items="breadcrumbItems"
+      :can-go-back="canGoBack"
+      :can-go-forward="canGoForward"
+      :can-go-up="canGoUp"
+      @back="$emit('back')"
+      @forward="$emit('forward')"
+      @up="$emit('up')"
+      @navigate="handleBreadcrumbNavigate"
+    />
 
     <!-- Main Area -->
     <main class="main-content explorer-layout__main">
@@ -55,11 +64,17 @@ const props = defineProps<{
   breadcrumbItems?: any[]
   hasSelection?: boolean
   hasClipboard?: boolean
+  canGoBack?: boolean
+  canGoForward?: boolean
+  canGoUp?: boolean
 }>()
 import { computed } from 'vue'
 const breadcrumbItems = computed(() => props.breadcrumbItems ?? [])
 const hasSelection = computed(() => props.hasSelection ?? false)
 const hasClipboard = computed(() => props.hasClipboard ?? false)
+const canGoBack = computed(() => props.canGoBack ?? false)
+const canGoForward = computed(() => props.canGoForward ?? false)
+const canGoUp = computed(() => props.canGoUp ?? false)
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
@@ -90,7 +105,7 @@ function handleBreadcrumbNavigate(item: any) {
   emit('navigate', item)
 }
 
-const emit = defineEmits(['navigate','new-folder','upload-file','cut','copy','paste','rename','delete','sort','sort-change','filter-change'])
+const emit = defineEmits(['navigate','back','forward','up','new-folder','upload-file','cut','copy','paste','rename','delete','sort','sort-change','filter-change'])
 </script>
 
 <style scoped>

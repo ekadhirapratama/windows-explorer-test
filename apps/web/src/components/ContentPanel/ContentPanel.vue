@@ -37,7 +37,7 @@
     </div>
 
     <!-- Empty State (No Selection & Not Searching) -->
-    <div v-else-if="!selectedFolder && !isSearchActive && isEmpty && !isLoading" class="content-panel__state">
+    <div v-else-if="!selectedFolder && !isSearchActive && !isQuickAccessView && isEmpty && !isLoading" class="content-panel__state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
       </svg>
@@ -97,7 +97,8 @@ const props = defineProps<{
   selectedFolder: Folder | null
   filterType?: 'folder' | 'file' | 'all'
   breadcrumbItems?: any[]
-  onNavigateToFolder?: (folderId: string) => void
+  isQuickAccessView?: boolean
+  onNavigateToFolder?: (folderId: string, options?: { fromSearch?: boolean, parentId?: string | null }) => void
 }>()
 
 const emit = defineEmits<{
@@ -158,6 +159,7 @@ const filteredFiles = computed(() => {
 })
 
 const showFilesFirst = computed(() => false) // Always show folders first
+const isQuickAccessView = computed(() => props.isQuickAccessView ?? false)
 
 const { setCurrentItems } = useExplorerState()
 
@@ -173,12 +175,14 @@ watch([folders, files], () => {
 
 
 // Watch selected folder and load its contents OR search results
-watch([() => props.selectedFolder, searchResults, isSearchActive, filterType], async ([newFolder, results, searching]) => {
+watch([() => props.selectedFolder, searchResults, isSearchActive, filterType, isQuickAccessView], async ([newFolder, results, searching, _, quickAccess]) => {
   if (searching && results) {
     // Show search results
     folders.value = results.folders
     files.value = results.files
     error.value = searchError.value
+  } else if (quickAccess) {
+    await loadQuickAccess()
   } else if (newFolder) {
     // Load folder contents
     await loadFolderContents(newFolder.id)
@@ -226,15 +230,36 @@ async function loadRootFolders() {
   }
 }
 
+async function loadQuickAccess() {
+  isLoading.value = true
+  error.value = null
+
+  try {
+    const rootFolders = await api.getRootFolders()
+    folders.value = rootFolders.filter(folder => folder.category === 'quick-access')
+    files.value = []
+  } catch (err: any) {
+    error.value = err.message || 'Failed to load quick access'
+    showError('Failed to load quick access')
+    console.error('Error loading quick access:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
 function handleFolderDoubleClick(item: Folder | File) {
   const folder = item as Folder
+  const navigatedFromSearch = isSearchActive.value
   // Clear search on navigation
-  if (isSearchActive.value) {
+  if (navigatedFromSearch) {
     clearSearch()
   }
   
   if (props.onNavigateToFolder) {
-    props.onNavigateToFolder(folder.id)
+    props.onNavigateToFolder(folder.id, { 
+      fromSearch: navigatedFromSearch,
+      parentId: folder.parentId
+    })
   }
 }
 
