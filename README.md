@@ -87,12 +87,9 @@ Access the application at http://localhost:5173.
 
 ## 🧪 Testing Coverage
 
-The project includes unit and integration tests.
+The project includes unit and integration tests. [See detailed testing scenarios](TESTING.md).
 
 ```bash
-# Run all tests
-bun test
-
 # Backend specific tests
 cd apps/api && bun test
 
