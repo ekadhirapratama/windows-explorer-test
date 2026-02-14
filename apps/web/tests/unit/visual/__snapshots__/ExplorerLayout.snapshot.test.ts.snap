@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ExplorerLayout (snapshot) > renders basic layout 1`] = `
+"<div data-v-223221f2="" class="app-container explorer-layout">
+  <!-- Action Toolbar -->
+  <action-toolbar-stub data-v-223221f2="" hasselection="false" hasclipboard="false"></action-toolbar-stub><!-- Navigation Bar (Breadcrumb + Search) -->
+  <navigation-bar-stub data-v-223221f2="" items="" cangoback="false" cangoforward="false" cangoup="false"></navigation-bar-stub><!-- Main Area -->
+  <main data-v-223221f2="" class="main-content explorer-layout__main">
+    <!-- Sidebar -->
+    <sidebar-stub data-v-223221f2="" class="sidebar explorer-layout__sidebar"></sidebar-stub><!-- Content -->
+    <section data-v-223221f2="" class="file-area explorer-layout__content"></section>
+  </main><!-- Status Bar -->
+  <status-bar-stub data-v-223221f2=""></status-bar-stub>
+</div>"
+`;

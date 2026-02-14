@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ContentItem (snapshot) > renders file item correctly 1`] = `
+"<div data-v-89ce273e="" class="content-item">
+  <div data-v-89ce273e="" class="content-item__icon">
+    <file-icon-stub data-v-89ce273e="" extension="png"></file-icon-stub>
+  </div>
+  <div data-v-89ce273e="" class="content-item__name" title="photo">photo.png</div>
+</div>"
+`;
+
+exports[`ContentItem (snapshot) > renders folder item correctly 1`] = `
+"<div data-v-89ce273e="" class="content-item content-item--folder">
+  <div data-v-89ce273e="" class="content-item__icon"><svg data-v-89ce273e="" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path data-v-89ce273e="" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+    </svg></div>
+  <div data-v-89ce273e="" class="content-item__name" title="My Folder">My Folder</div>
+</div>"
+`;

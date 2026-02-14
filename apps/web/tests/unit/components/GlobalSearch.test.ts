@@ -1,17 +1,17 @@
 import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import GlobalSearch from '../../../src/components/GlobalSearch/GlobalSearch.vue'
-import * as useSearchComposable from '../../../src/composables/useSearch'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
+import GlobalSearch from '@/components/GlobalSearch/GlobalSearch.vue'
+import * as useSearchComposable from '@/composables/useSearch'
 
 // Mock the composable
-vi.mock('../../../src/composables/useSearch', () => ({
+vi.mock('@/composables/useSearch', () => ({
     useSearch: vi.fn()
 }))
 
 describe('GlobalSearch.vue', () => {
-    let handleSearchInputMock: any
-    let clearSearchMock: any
+    let handleSearchInputMock: Mock
+    let clearSearchMock: Mock
     let searchQueryMock: any
 
     beforeEach(() => {
@@ -19,16 +19,16 @@ describe('GlobalSearch.vue', () => {
         clearSearchMock = vi.fn()
         searchQueryMock = ref('')
 
-        // Setup mock return value
-        vi.mocked(useSearchComposable.useSearch).mockReturnValue({
-            searchQuery: searchQueryMock,
-            searchResults: ref(null),
-            isSearching: ref(false),
-            searchError: ref(null),
-            isSearchActive: ref(false),
-            handleSearchInput: handleSearchInputMock,
-            clearSearch: clearSearchMock
-        } as any)
+            // Setup mock return value using type casting instead of vi.mocked to be safer
+            ; (useSearchComposable.useSearch as Mock).mockReturnValue({
+                searchQuery: searchQueryMock,
+                searchResults: ref(null),
+                isSearching: ref(false),
+                searchError: ref(null),
+                isSearchActive: ref(false),
+                handleSearchInput: handleSearchInputMock,
+                clearSearch: clearSearchMock
+            })
     })
 
     it('renders input field', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it, mock, beforeEach } from 'bun:test'
-import { FolderService } from '../../../../src/application/services/FolderService'
-import { IFolderRepository } from '../../../../src/domain/repositories'
+import { FolderService } from '@/application/services/FolderService'
+import { IFolderRepository } from '@/domain/repositories'
 
 describe('FolderService', () => {
     let folderService: FolderService
@@ -12,7 +12,9 @@ describe('FolderService', () => {
         parentId: null,
         hasChildren: false,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        category: null,
+        icon: null
     }
 
     beforeEach(() => {
@@ -20,7 +22,12 @@ describe('FolderService', () => {
             findRoots: mock(() => Promise.resolve([])),
             findChildren: mock(() => Promise.resolve({ folders: [], files: [] })),
             findById: mock(() => Promise.resolve(null)),
-            globalSearch: mock(() => Promise.resolve({ folders: [], files: [] }))
+            globalSearch: mock(() => Promise.resolve({ folders: [], files: [] })),
+            create: mock(() => Promise.resolve(mockFolder)),
+            deleteById: mock(() => Promise.resolve(true)),
+            copy: mock(() => Promise.resolve(mockFolder)),
+            update: mock(() => Promise.resolve(mockFolder)),
+            rename: mock(() => Promise.resolve(mockFolder))
         } as unknown as IFolderRepository
         folderService = new FolderService(mockFolderRepository)
     })
@@ -59,7 +66,6 @@ describe('FolderService', () => {
             const folderId = 'non-existent'
             mockFolderRepository.findById = mock(() => Promise.resolve(null))
 
-            // expect(promise).rejects.toThrow() syntax in bun test
             try {
                 await folderService.getChildren(folderId)
             } catch (error: any) {

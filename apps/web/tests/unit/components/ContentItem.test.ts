@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect } from 'vitest'
-import ContentItem from '../../../src/components/ContentPanel/ContentItem.vue'
-import FileIcon from '../../../src/components/FileIcon/FileIcon.vue'
+import ContentItem from '@/components/ContentPanel/ContentItem.vue'
+import FileIcon from '@/components/FileIcon/FileIcon.vue'
 
 describe('ContentItem.vue', () => {
     const mockFolder = {
@@ -29,7 +29,9 @@ describe('ContentItem.vue', () => {
                 item: mockFolder
             }
         })
-        expect(wrapper.find('.material-icons-round').text()).toBe('folder')
+        // Check for SVG instead of material icon class
+        expect(wrapper.find('.content-item__icon svg').exists()).toBe(true)
+        // verify it is NOT the FileIcon component
         expect(wrapper.findComponent(FileIcon).exists()).toBe(false)
     })
 
@@ -68,7 +70,7 @@ describe('ContentItem.vue', () => {
         const wrapper = mount(ContentItem, {
             props: {
                 item: mockFolder,
-                isSelected: true
+                selected: true // Prop name is 'selected' not 'isSelected' based on component definition
             }
         })
         expect(wrapper.classes()).toContain('content-item--selected')

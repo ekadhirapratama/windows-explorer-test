@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useSearch } from '../../../src/composables/useSearch'
-import { api } from '../../../src/services/api'
+import { useSearch } from '@/composables/useSearch'
+import { api } from '@/services/api'
+import { flushPromises } from '@vue/test-utils'
 
 // Mock API
-vi.mock('../../../src/services/api', () => ({
+vi.mock('@/services/api', () => ({
     api: {
         globalSearch: vi.fn()
     }
@@ -13,6 +14,10 @@ describe('useSearch', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.useFakeTimers()
+
+        // Reset singleton state
+        const { clearSearch } = useSearch()
+        clearSearch()
     })
 
     afterEach(() => {
@@ -57,10 +62,8 @@ describe('useSearch', () => {
         handleSearchInput('test')
         vi.advanceTimersByTime(500)
 
-        // Wait for promise resolution
-        await Promise.resolve()
-        // And another tick for reactivity if needed, but usually await Promise.resolve() is enough for microtasks
-        await Promise.resolve()
+        // Process the async performSearch call
+        await flushPromises()
 
         expect(searchResults.value).toEqual(mockResults)
         expect(isSearchActive.value).toBe(true)
