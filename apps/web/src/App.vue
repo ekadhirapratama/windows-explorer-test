@@ -3,6 +3,8 @@
     :breadcrumb-items="breadcrumbItems"
     :has-selection="hasSelection"
     :has-clipboard="hasClipboard"
+    :total-items="totalItems"
+    :selected-count="selectedCount"
     @new-folder="openCreateFolderModal"
     @upload-file="openUploadFileModal"
     @cut="handleCut"
@@ -10,6 +12,8 @@
     @paste="handlePaste"
     @rename="openRenameModal"
     @delete="handleDelete"
+    @sort-change="handleSortChange"
+    @filter-change="handleFilterChange"
   >
     <template #sidebar>
       <FolderTree 
@@ -19,10 +23,15 @@
 
     <template #content>
       <ContentPanel 
+        :key="contentPanelKey"
         :selected-folder="selectedFolder"
+        :sort-by="sortBy"
+        :sort-order="sortOrder"
+        :filter-type="filterType"
         :breadcrumb-items="breadcrumbItems"
         :on-navigate-to-folder="handleNavigateToFolder"
         @item-selected="handleItemSelected"
+        @item-count-changed="handleItemCountChanged"
       />
     </template>
   </ExplorerLayout>
@@ -72,6 +81,11 @@ const { selectedFolder, selectFolder, toggleFolder, findFolderById, rootFolders,
 const { selectedItem, clipboard, hasSelection, hasClipboard, selectItem, clearSelection, cut, copy, clearClipboard } = useExplorerState()
 const { success, error: showError } = useToast()
 
+// Update selected count when selection changes
+watch(selectedItem, (newItem) => {
+  selectedCount.value = newItem ? 1 : 0
+})
+
 // Provide the composable to child components
 provide('folderTree', folderTreeComposable)
 
@@ -79,6 +93,20 @@ provide('folderTree', folderTreeComposable)
 const showCreateFolderModal = ref(false)
 const showUploadFileModal = ref(false)
 const showRenameModal = ref(false)
+
+// Sort state
+const sortBy = ref<'name' | 'type' | 'createdAt'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
+
+// Filter state
+const filterType = ref<'folder' | 'file' | 'all'>('all')
+
+// Item counts for status bar
+const totalItems = ref(0)
+const selectedCount = ref(0)
+
+// Content panel refresh key
+const contentPanelKey = ref(0)
 
 // Breadcrumb tracking
 const breadcrumbItems = ref<BreadcrumbItem[]>([])
@@ -152,6 +180,13 @@ function handleItemSelected(item: { id: string; type: 'folder' | 'file'; name: s
 }
 
 /**
+ * Handle item count changes from ContentPanel
+ */
+function handleItemCountChanged(count: number) {
+  totalItems.value = count
+}
+
+/**
  * Modal handlers
  */
 function openCreateFolderModal() {
@@ -167,23 +202,36 @@ function openRenameModal() {
   showRenameModal.value = true
 }
 
+function handleSortChange(payload: { sortBy: 'name' | 'type' | 'createdAt'; sortOrder: 'asc' | 'desc' }) {
+  sortBy.value = payload.sortBy
+  sortOrder.value = payload.sortOrder
+}
+
+function handleFilterChange(payload: { filterType: 'folder' | 'file' | 'all' }) {
+  filterType.value = payload.filterType
+}
+
 async function handleFolderCreated() {
   // Reload current folder or root folders
-  if (selectedFolder.value) {
-    await loadRootFolders()
-  }
+  await loadRootFolders()
+  contentPanelKey.value++
 }
 
 async function handleFileUploaded() {
   // Reload current folder
-  if (selectedFolder.value) {
-    await loadRootFolders()
-  }
+  await loadRootFolders()
+  contentPanelKey.value++
+}
+
+async function refreshView() {
+  await loadRootFolders()
+  contentPanelKey.value++
 }
 
 async function handleRenamed() {
   // Reload to reflect changes
   await loadRootFolders()
+  contentPanelKey.value++
   clearSelection()
 }
 
@@ -214,32 +262,37 @@ async function handlePaste() {
   if (!clipboard.value) return
 
   const targetFolderId = selectedFolder.value?.id || null
+  const itemName = clipboard.value.item.name
+  const action = clipboard.value.action === 'cut' ? 'moved' : 'copied'
 
   try {
     if (clipboard.value.action === 'cut') {
       // Move operation
       if (clipboard.value.item.type === 'folder') {
         await api.moveFolder(clipboard.value.item.id, targetFolderId)
-        success(`Folder moved successfully`)
       } else {
         await api.moveFile(clipboard.value.item.id, targetFolderId)
-        success(`File moved successfully`)
       }
+      success(`"${itemName}" ${action} successfully`)
     } else {
       // Copy operation
       if (clipboard.value.item.type === 'folder') {
         await api.copyFolder(clipboard.value.item.id, targetFolderId)
-        success(`Folder copied successfully`)
       } else {
         await api.copyFile(clipboard.value.item.id, targetFolderId)
-        success(`File copied successfully`)
       }
+      success(`"${itemName}" ${action} successfully`)
     }
 
     clearClipboard()
+    clearSelection()
+    
+    // Reload folder tree and force content panel refresh
     await loadRootFolders()
+    contentPanelKey.value++
   } catch (err: any) {
     showError(err.message || 'Failed to paste item')
+    console.error('Paste error:', err)
   }
 }
 
@@ -263,7 +316,7 @@ async function handleDelete() {
     }
 
     clearSelection()
-    await loadRootFolders()
+    await refreshView()
   } catch (err: any) {
     showError(err.message || 'Failed to delete item')
   }

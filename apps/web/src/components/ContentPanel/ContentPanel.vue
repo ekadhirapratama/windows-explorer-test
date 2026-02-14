@@ -16,8 +16,8 @@
       <span>{{ error }}</span>
     </div>
 
-    <!-- Empty State (No Selection & Not Searching) -->
-    <div v-else-if="!selectedFolder && !isSearchActive" class="content-panel__state">
+    <!-- Empty State (No Selection & Not Searching & No Content) -->
+    <div v-else-if="!selectedFolder && !isSearchActive && isEmpty && !isLoading" class="content-panel__state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
       </svg>
@@ -46,24 +46,40 @@
 
     <!-- Grid Content -->
     <div v-else class="content-panel__grid">
-      <!-- Folders First -->
-      <ContentItem
-        v-for="folder in folders"
-        :key="'folder-' + folder.id"
-        :item="folder"
-        :selected="selectedItem?.id === folder.id"
-        @click="handleItemClick"
-        @double-click="handleFolderDoubleClick"
-      />
-
-      <!-- Then Files -->
-      <ContentItem
-        v-for="file in files"
-        :key="'file-' + file.id"
-        :item="file"
-        :selected="selectedItem?.id === file.id"
-        @click="handleItemClick"
-      />
+      <template v-if="showFilesFirst">
+        <ContentItem
+          v-for="file in filteredFiles"
+          :key="'file-' + file.id"
+          :item="file"
+          :selected="selectedItem?.id === file.id"
+          @click="handleItemClick"
+        />
+        <ContentItem
+          v-for="folder in filteredFolders"
+          :key="'folder-' + folder.id"
+          :item="folder"
+          :selected="selectedItem?.id === folder.id"
+          @click="handleItemClick"
+          @double-click="handleFolderDoubleClick"
+        />
+      </template>
+      <template v-else>
+        <ContentItem
+          v-for="folder in filteredFolders"
+          :key="'folder-' + folder.id"
+          :item="folder"
+          :selected="selectedItem?.id === folder.id"
+          @click="handleItemClick"
+          @double-click="handleFolderDoubleClick"
+        />
+        <ContentItem
+          v-for="file in filteredFiles"
+          :key="'file-' + file.id"
+          :item="file"
+          :selected="selectedItem?.id === file.id"
+          @click="handleItemClick"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -78,12 +94,16 @@ import ContentItem from './ContentItem.vue'
 
 const props = defineProps<{
   selectedFolder: Folder | null
+  sortBy?: 'name' | 'type' | 'createdAt'
+  sortOrder?: 'asc' | 'desc'
+  filterType?: 'folder' | 'file' | 'all'
   breadcrumbItems?: any[]
   onNavigateToFolder?: (folderId: string) => void
 }>()
 
 const emit = defineEmits<{
   itemSelected: [item: { id: string; type: 'folder' | 'file'; name: string; data: Folder | File }]
+  itemCountChanged: [count: number]
 }>()
 
 const folders = ref<Folder[]>([])
@@ -114,9 +134,56 @@ const isEmpty = computed(() => {
   return folders.value.length === 0 && files.value.length === 0
 })
 
+const sortBy = computed(() => props.sortBy ?? 'name')
+const sortOrder = computed(() => props.sortOrder ?? 'asc')
+const filterType = computed(() => props.filterType ?? 'all')
+
+const sortedFolders = computed(() => {
+  let list = [...folders.value]
+  if (sortBy.value === 'name') {
+    list.sort((a, b) => a.name.localeCompare(b.name))
+  } else if (sortBy.value === 'createdAt') {
+    list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  }
+  if (sortOrder.value === 'desc' && sortBy.value !== 'type') {
+    list.reverse()
+  }
+  return list
+})
+
+const sortedFiles = computed(() => {
+  let list = [...files.value]
+  if (sortBy.value === 'name') {
+    list.sort((a, b) => a.name.localeCompare(b.name))
+  } else if (sortBy.value === 'createdAt') {
+    list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  }
+  if (sortOrder.value === 'desc' && sortBy.value !== 'type') {
+    list.reverse()
+  }
+  return list
+})
+
+const filteredFolders = computed(() => {
+  if (filterType.value === 'file') return []
+  return sortedFolders.value
+})
+
+const filteredFiles = computed(() => {
+  if (filterType.value === 'folder') return []
+  return sortedFiles.value
+})
+
+const showFilesFirst = computed(() => sortBy.value === 'type' && sortOrder.value === 'desc')
+
+// Watch item count and emit changes
+watch(itemCount, (newCount) => {
+  emit('itemCountChanged', newCount)
+}, { immediate: true })
+
 
 // Watch selected folder and load its contents OR search results
-watch([() => props.selectedFolder, searchResults, isSearchActive], async ([newFolder, results, searching]) => {
+watch([() => props.selectedFolder, searchResults, isSearchActive, sortBy, sortOrder, filterType], async ([newFolder, results, searching]) => {
   if (searching && results) {
     // Show search results
     folders.value = results.folders
@@ -126,9 +193,8 @@ watch([() => props.selectedFolder, searchResults, isSearchActive], async ([newFo
     // Load folder contents
     await loadFolderContents(newFolder.id)
   } else {
-    // No selection and not searching
-    folders.value = []
-    files.value = []
+    // No selection - load root folders on initial load
+    await loadRootFolders()
   }
 }, { immediate: true })
 
@@ -137,13 +203,34 @@ async function loadFolderContents(folderId: string) {
   error.value = null
 
   try {
-    const response = await api.getFolderChildren(folderId)
+    const response = await api.getFolderChildren(folderId, {
+      sortBy: sortBy.value,
+      sortOrder: sortOrder.value,
+      filterType: filterType.value
+    })
     folders.value = response.folders
     files.value = response.files
   } catch (err: any) {
     error.value = err.message || 'Failed to load folder contents'
     showError('Failed to load folder contents')
     console.error('Error loading folder contents:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function loadRootFolders() {
+  isLoading.value = true
+  error.value = null
+
+  try {
+    const rootFolders = await api.getRootFolders()
+    folders.value = rootFolders
+    files.value = []
+  } catch (err: any) {
+    error.value = err.message || 'Failed to load root folders'
+    showError('Failed to load root folders')
+    console.error('Error loading root folders:', err)
   } finally {
     isLoading.value = false
   }

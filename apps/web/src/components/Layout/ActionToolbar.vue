@@ -38,10 +38,28 @@
 
       <div class="divider-v"></div>
 
-      <button class="btn-text" @click="$emit('sort')">
-        <span class="material-icons-round text-xl">sort</span>
-        <span class="text-sm">Sort</span>
-      </button>
+      <div class="sort-controls">
+        <label class="sort-label" for="sort-by">Sort</label>
+        <select id="sort-by" v-model="sortBy" class="sort-select" @change="emitSortChange">
+          <option value="name">Name</option>
+          <option value="type">Type</option>
+          <option value="createdAt">Date</option>
+        </select>
+        <button class="btn-icon" :title="sortOrder === 'asc' ? 'Ascending' : 'Descending'" @click="toggleSortOrder">
+          <span class="material-icons-round text-xl">
+            {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+          </span>
+        </button>
+      </div>
+
+      <div class="filter-controls">
+        <label class="filter-label">Show:</label>
+        <div class="filter-buttons">
+          <button @click="setFilter('all')" :class="{ active: filterType === 'all' }" class="filter-btn">All</button>
+          <button @click="setFilter('folder')" :class="{ active: filterType === 'folder' }" class="filter-btn">Folders</button>
+          <button @click="setFilter('file')" :class="{ active: filterType === 'file' }" class="filter-btn">Files</button>
+        </div>
+      </div>
     </div>
 
     <div class="toolbar-end">
@@ -53,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{ 
   hasSelection?: boolean
@@ -69,12 +87,31 @@ const emit = defineEmits<{
   share: []
   delete: []
   sort: []
+  'sort-change': [payload: { sortBy: 'name' | 'type' | 'createdAt'; sortOrder: 'asc' | 'desc' }]
+  'filter-change': [payload: { filterType: 'folder' | 'file' | 'all' }]
   more: []
 }>()
 
-const hasSelection = props.hasSelection ?? false
-const hasClipboard = props.hasClipboard ?? false
+const hasSelection = computed(() => props.hasSelection ?? false)
+const hasClipboard = computed(() => props.hasClipboard ?? false)
 const showDropdown = ref(false)
+const sortBy = ref<'name' | 'type' | 'createdAt'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
+const filterType = ref<'folder' | 'file' | 'all'>('all')
+
+function emitSortChange() {
+  emit('sort-change', { sortBy: sortBy.value, sortOrder: sortOrder.value })
+}
+
+function toggleSortOrder() {
+  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  emitSortChange()
+}
+
+function setFilter(type: 'folder' | 'file' | 'all') {
+  filterType.value = type
+  emit('filter-change', { filterType: type })
+}
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value
@@ -90,9 +127,16 @@ function handleUploadFile() {
   emit('upload-file')
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', () => {
+function handleDocumentClick() {
   showDropdown.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
@@ -238,6 +282,68 @@ document.addEventListener('click', () => {
 .btn-text:hover {
   background-color: var(--color-bg-hover);
   border-color: var(--color-accent);
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.sort-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.sort-select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.filter-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filter-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--color-border);
+  background: white;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  border-radius: 4px;
+  transition: background-color var(--transition-fast);
+}
+
+.filter-btn.active {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.filter-btn:hover:not(.active) {
+  background: var(--color-bg-hover);
 }
 
 .toolbar-end {

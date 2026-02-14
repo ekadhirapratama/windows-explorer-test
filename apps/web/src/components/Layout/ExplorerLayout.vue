@@ -12,6 +12,8 @@
       @rename="$emit('rename')"
       @delete="$emit('delete')"
       @sort="$emit('sort')" 
+      @sort-change="$emit('sort-change', $event)"
+      @filter-change="$emit('filter-change', $event)"
     />
 
     <!-- Navigation Bar (Breadcrumb + Search) -->
@@ -33,7 +35,10 @@
     </main>
 
     <!-- Status Bar -->
-    <StatusBar />
+    <StatusBar 
+      :total-items="totalItems"
+      :selected-count="selectedCount"
+    />
   </div>
 </template>
 
@@ -53,6 +58,8 @@ const props = defineProps<{
   breadcrumbItems?: any[]
   hasSelection?: boolean
   hasClipboard?: boolean
+  totalItems?: number
+  selectedCount?: number
 }>()
 import { computed } from 'vue'
 const breadcrumbItems = computed(() => props.breadcrumbItems ?? [])
@@ -88,7 +95,7 @@ function handleBreadcrumbNavigate(item: any) {
   emit('navigate', item)
 }
 
-const emit = defineEmits(['navigate','new-folder','upload-file','cut','copy','paste','rename','delete','sort'])
+const emit = defineEmits(['navigate','new-folder','upload-file','cut','copy','paste','rename','delete','sort','sort-change','filter-change'])
 </script>
 
 <style scoped>
