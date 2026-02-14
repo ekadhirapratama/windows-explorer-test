@@ -171,7 +171,7 @@ export class FolderRepository implements IFolderRepository {
                 category: folders.category,
                 icon: folders.icon,
                 hasChildren: sql<boolean>`(
-          EXISTS(SELECT 1 FROM ${folders} AS f WHERE f.parent_id = ${folders.id})
+          EXISTS(SELECT 1 FROM folders AS f WHERE f.parent_id = folders.id)
         )`
             })
             .from(folders)
