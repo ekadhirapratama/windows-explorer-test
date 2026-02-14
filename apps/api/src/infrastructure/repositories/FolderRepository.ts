@@ -76,6 +76,34 @@ export class FolderRepository implements IFolderRepository {
         }
     }
 
+    async update(folderId: string, data: Partial<{ name: string; parentId: string | null }>): Promise<Folder> {
+        const [updated] = await db
+            .update(folders)
+            .set({
+                ...data,
+                updatedAt: new Date()
+            })
+            .where(eq(folders.id, folderId))
+            .returning({
+                id: folders.id,
+                name: folders.name,
+                parentId: folders.parentId,
+                createdAt: folders.createdAt,
+                updatedAt: folders.updatedAt,
+                category: folders.category,
+                icon: folders.icon
+            })
+
+        if (!updated) {
+            throw new Error('Folder not found')
+        }
+
+        return {
+            ...(updated as Omit<Folder, 'hasChildren'>),
+            hasChildren: false
+        }
+    }
+
     async rename(folderId: string, newName: string): Promise<Folder> {
         const trimmedName = newName.trim()
         if (!trimmedName) {

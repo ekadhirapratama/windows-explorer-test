@@ -42,14 +42,46 @@ export class FolderService {
     /**
      * Get children (folders and files) of a specific folder
      */
-    async getChildren(folderId: string): Promise<{ folders: Folder[], files: File[] }> {
+    async getChildren(
+        folderId: string,
+        options: {
+            sortBy?: 'name' | 'type' | 'createdAt'
+            sortOrder?: 'asc' | 'desc'
+            filterType?: 'folder' | 'file' | 'all'
+        } = {}
+    ): Promise<{ folders: Folder[], files: File[] }> {
         // Verify folder exists
         const folder = await this.folderRepository.findById(folderId)
         if (!folder) {
             throw new Error('Folder not found')
         }
 
-        return await this.folderRepository.findChildren(folderId)
+        const { sortBy = 'name', sortOrder = 'asc', filterType = 'all' } = options
+        const direction = sortOrder === 'desc' ? -1 : 1
+
+        const children = await this.folderRepository.findChildren(folderId)
+        let folders = [...children.folders]
+        let files = [...children.files]
+
+        if (filterType === 'folder') {
+            files = []
+        }
+
+        if (filterType === 'file') {
+            folders = []
+        }
+
+        if (sortBy === 'name') {
+            folders.sort((a, b) => direction * a.name.localeCompare(b.name))
+            files.sort((a, b) => direction * a.name.localeCompare(b.name))
+        }
+
+        if (sortBy === 'createdAt') {
+            folders.sort((a, b) => direction * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()))
+            files.sort((a, b) => direction * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()))
+        }
+
+        return { folders, files }
     }
 
     /**
@@ -73,6 +105,50 @@ export class FolderService {
         }
 
         await this.folderRepository.deleteById(folderId)
+    }
+
+    /**
+     * Check if a folder is a descendant of another folder
+     */
+    private async isDescendantOf(folderId: string, potentialAncestorId: string): Promise<boolean> {
+        if (folderId === potentialAncestorId) {
+            return true
+        }
+
+        const folder = await this.folderRepository.findById(folderId)
+        if (!folder || !folder.parentId) {
+            return false
+        }
+
+        return await this.isDescendantOf(folder.parentId, potentialAncestorId)
+    }
+
+    /**
+     * Move a folder to a new parent location
+     */
+    async moveFolder(folderId: string, newParentId: string | null): Promise<Folder> {
+        // Validate folder exists
+        const folder = await this.folderRepository.findById(folderId)
+        if (!folder) {
+            throw new Error('Folder not found')
+        }
+
+        // Validate new parent exists if provided
+        if (newParentId) {
+            const newParent = await this.folderRepository.findById(newParentId)
+            if (!newParent) {
+                throw new Error('Target folder not found')
+            }
+
+            // Prevent moving a folder into itself or its descendants
+            const isDescendant = await this.isDescendantOf(newParentId, folderId)
+            if (isDescendant) {
+                throw new Error('Cannot move folder into itself or its descendants')
+            }
+        }
+
+        // Update parent
+        return await this.folderRepository.update(folderId, { parentId: newParentId })
     }
 
     /**

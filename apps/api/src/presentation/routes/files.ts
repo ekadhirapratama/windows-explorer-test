@@ -40,6 +40,34 @@ export const fileRoutes = (app: Elysia) => {
                 }
             })
 
+            // PATCH /api/v1/files/:id/move - Move a file
+            .patch('/:id/move', async ({ params, body }) => {
+                try {
+                    const moved = await fileService.moveFile(params.id, body.newFolderId ?? null)
+                    return {
+                        data: moved
+                    }
+                } catch (error: any) {
+                    if (error.message === 'File not found') {
+                        throw new Error('File not found')
+                    }
+                    console.error('Error moving file:', error)
+                    throw new Error('Failed to move file')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                body: t.Object({
+                    newFolderId: t.Optional(t.Union([t.String(), t.Null()]))
+                }),
+                detail: {
+                    summary: 'Move a file',
+                    description: 'Moves a file to a new folder location',
+                    tags: ['files']
+                }
+            })
+
             // POST /api/v1/files/:id/copy - Copy a file
             .post('/:id/copy', async ({ params, body, set }) => {
                 try {

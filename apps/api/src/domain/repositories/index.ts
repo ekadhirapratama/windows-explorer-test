@@ -60,6 +60,13 @@ export interface IFolderRepository {
      * @param newName - New name for the folder
      */
     rename(folderId: string, newName: string): Promise<Folder>
+
+    /**
+     * Update a folder (for moving/renaming)
+     * @param folderId - Folder ID
+     * @param data - Partial update data
+     */
+    update(folderId: string, data: Partial<{ name: string; parentId: string | null }>): Promise<Folder>
 }
 
 /**
@@ -117,4 +124,11 @@ export interface IFileRepository {
      * @param newName - New name for the file (without extension)
      */
     rename(fileId: string, newName: string): Promise<File>
+
+    /**
+     * Update a file (for moving/renaming)
+     * @param fileId - File ID
+     * @param data - Partial update data
+     */
+    update(fileId: string, data: Partial<{ name: string; folderId: string | null }>): Promise<File>
 }

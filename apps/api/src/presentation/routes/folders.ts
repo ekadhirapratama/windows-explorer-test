@@ -34,9 +34,13 @@ export const folderRoutes = (app: Elysia) => {
             })
 
             // GET /api/v1/folders/:id/children - Get folder children
-            .get('/:id/children', async ({ params }) => {
+            .get('/:id/children', async ({ params, query }) => {
                 try {
-                    const children = await folderService.getChildren(params.id)
+                    const children = await folderService.getChildren(params.id, {
+                        sortBy: query.sortBy,
+                        sortOrder: query.sortOrder,
+                        filterType: query.filterType
+                    })
                     return {
                         data: children
                     }
@@ -50,6 +54,11 @@ export const folderRoutes = (app: Elysia) => {
             }, {
                 params: t.Object({
                     id: t.String()
+                }),
+                query: t.Object({
+                    sortBy: t.Optional(t.Union([t.Literal('name'), t.Literal('type'), t.Literal('createdAt')])),
+                    sortOrder: t.Optional(t.Union([t.Literal('asc'), t.Literal('desc')])),
+                    filterType: t.Optional(t.Union([t.Literal('folder'), t.Literal('file'), t.Literal('all')]))
                 }),
                 detail: {
                     summary: 'Get folder children',
@@ -108,6 +117,37 @@ export const folderRoutes = (app: Elysia) => {
                 detail: {
                     summary: 'Delete a folder',
                     description: 'Deletes a folder and all of its contents',
+                    tags: ['folders']
+                }
+            })
+
+            // PATCH /api/v1/folders/:id/move - Move a folder
+            .patch('/:id/move', async ({ params, body }) => {
+                try {
+                    const moved = await folderService.moveFolder(params.id, body.newParentId ?? null)
+                    return {
+                        data: moved
+                    }
+                } catch (error: any) {
+                    if (error.message === 'Folder not found' || error.message === 'Target folder not found') {
+                        throw new Error('Folder not found')
+                    }
+                    if (error.message === 'Cannot move folder into itself or its descendants') {
+                        throw new Error('Cannot move folder into itself or its descendants')
+                    }
+                    console.error('Error moving folder:', error)
+                    throw new Error('Failed to move folder')
+                }
+            }, {
+                params: t.Object({
+                    id: t.String()
+                }),
+                body: t.Object({
+                    newParentId: t.Optional(t.Union([t.String(), t.Null()]))
+                }),
+                detail: {
+                    summary: 'Move a folder',
+                    description: 'Moves a folder to a new parent location',
                     tags: ['folders']
                 }
             })

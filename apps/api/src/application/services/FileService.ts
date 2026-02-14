@@ -58,6 +58,20 @@ export class FileService {
     }
 
     /**
+     * Move a file to a new folder location
+     */
+    async moveFile(fileId: string, newFolderId: string | null): Promise<FileEntity> {
+        // Validate file exists
+        const file = await this.fileRepository.findById(fileId)
+        if (!file) {
+            throw new Error('File not found')
+        }
+
+        // Update folder
+        return await this.fileRepository.update(fileId, { folderId: newFolderId })
+    }
+
+    /**
      * Copy a file
      */
     async copyFile(fileId: string, targetFolderId: string | null): Promise<FileEntity> {
