@@ -1,155 +1,134 @@
 # Windows Explorer Web App
 
-A Windows Explorer-like web application built with Vue 3, Elysia, and PostgreSQL.
+A modern, highly responsive Windows Explorer clone built with **Vue 3**, **ElysiaJS**, and **PostgreSQL**. This project demonstrates a robust implementation of a file management system using efficient algorithms for unlimited folder depth and a Clean Architecture pattern on the backend.
+
+## 📸 Preview
+
+![image](https://s.digitalservice.id/2wPHnX)
 
 ## 🏗️ Architecture
 
-This is a **monorepo** project using Bun workspaces with:
+The project is structured as a **monorepo** using Bun workspaces, ensuring efficient dependency management and type safety across the full stack.
 
-- **Backend (API)**: Elysia + TypeScript + Drizzle ORM + PostgreSQL
-- **Frontend (Web)**: Vue 3 + Vite + TypeScript
-- **Shared**: Common TypeScript types
+### Backend (Clean Architecture)
+The API (`apps/api`) follows **Hexagonal (Clean) Architecture** principles to ensure separation of concerns and maintainability:
+- **Domain Layer**: Core business entities and repository interfaces (independent of external frameworks).
+- **Application Layer**: Use cases and services that orchestrate business logic.
+- **Infrastructure Layer**: Concrete implementations of repositories (Drizzle ORM), database connections, and external adapters.
+- **Presentation Layer**: HTTP routes and controllers using ElysiaJS.
 
-The backend follows **Hexagonal/Clean Architecture** with:
-- Domain Layer (entities, repository interfaces)
-- Application Layer (services, use cases)
-- Infrastructure Layer (database, repository implementations)
-- Presentation Layer (HTTP routes)
+### Frontend (Component-Based)
+The Web app (`apps/web`) is built with **Vue 3 (Composition API)** and **Vite**:
+- **State Management**: Custom Composables (`useExplorerState`) for lightweight, reactive state handling.
+- **UI Components**: Modular, reusable components (FolderTree, ContentPanel, ActionToolbar) styled with scoped CSS.
+- **Performance**: Lazy-loading folder structures to handle deep hierarchies efficiently.
+
+## 🛠️ Technology Stack & Dependencies
+
+*   **Runtime**: [Bun](https://bun.sh) (v1.3.9+) - Fast JavaScript runtime & package manager.
+*   **Backend Framework**: [ElysiaJS](https://elysiajs.com/) - High-performance web framework for Bun.
+*   **Frontend Framework**: [Vue 3](https://vuejs.org/) + [Vite](https://vitejs.dev/).
+*   **Database**: [PostgreSQL](https://www.postgresql.org/) (v14+).
+*   **ORM**: [Drizzle ORM](https://orm.drizzle.team/) - TypeScript-first ORM.
+*   **Containerization**: [Docker](https://www.docker.com/) & Docker Compose.
+
+## ✨ Features
+
+-   **Dual-Panel Navigation**: Classic folder tree (left) and content grid (right).
+-   **Recursive Folder Structure**: scalable design supporting unlimited nesting depth.
+-   **File Operations**: Create Folder, Upload File, Rename, Delete, Cut, Copy, Paste.
+-   **Search**: Global search functionality to quickly find files and folders.
+-   **Sorting & Filtering**: Sort by Name/Type/Date and Filter by file type.
+-   **"Quick Access" & "This PC"**: Categorized sidebar for easy navigation.
 
 ## 📋 Prerequisites
 
-- [Bun](https://bun.sh) v1.3.9 or higher
-- [Docker](https://www.docker.com/) and Docker Compose
-- PostgreSQL 14+ (optional, can use Docker)
+-   [Bun](https://bun.sh) v1.3.9 or higher
+-   [Docker](https://www.docker.com/) and Docker Compose
+-   PostgreSQL 14+ (optional, can use Docker)
 
-## 🚀 Quick Start
+## 🚀 Installation & Quick Start
 
-### 1. Install Dependencies
+### Option A: Manual Setup (using Bun)
 
-```bash
-bun install
-```
+1.  **Install Dependencies**
+    ```bash
+    bun install
+    ```
 
-### 2. Start PostgreSQL
+2.  **Start Database (via Docker)**
+    ```bash
+    docker-compose up -d postgres
+    ```
 
-```bash
-# Using Docker (recommended)
-docker-compose up -d
-```
+3.  **Run Migrations & Seed Data**
+    ```bash
+    cd apps/api
+    bun run db:migrate
+    bun run db:seed
+    ```
 
-### 3. Run Database Migrations
+4.  **Start Development Servers**
+    From the root directory:
+    ```bash
+    bun run dev
+    ```
+    - Web: http://localhost:5173
+    - API: http://localhost:3000
 
-```bash
-# Generate migration files
-cd apps/api
-bun drizzle-kit generate
+### Option B: Docker Deployment (Full Stack)
 
-# Run migrations
-bun run db:migrate
-```
-
-### 4. Seed Database (Phase 1)
-
-```bash
-bun run db:seed
-```
-
-### 5. Start Development Servers
-
-```bash
-# From project root - starts both API and Web
-bun run dev
-```
-
-## 🐳 Docker Deployment
-
-### Full Stack (Recommended)
-
-Run all services (PostgreSQL, API, Web) with a single command:
+Run the entire stack (Database + API + Web) with a single command:
 
 ```bash
-# Build and start all services (PostgreSQL + API + Web)
 docker-compose up --build
-
-# Run in detached mode
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
-
-# Reset database (removes volumes)
-docker-compose down -v
 ```
+Access the application at http://localhost:5173.
 
-### Development Mode (Local)
+## 🧪 Testing Coverage
 
-For local development with hot reload:
+The project includes unit and integration tests.
 
 ```bash
-# Terminal 1: Start PostgreSQL only
-docker-compose up postgres
+# Run all tests
+bun test
 
-# Terminal 2: Start API with hot reload
-cd apps/api && bun --watch src/index.ts
+# Backend specific tests
+cd apps/api && bun test
 
-# Terminal 3: Start Web with hot reload
-cd apps/web && bun run dev
+# Frontend specific tests
+cd apps/web && bun test
 ```
+
+> *Test coverage reports can be generated using `bun test --coverage` (if configured).*
+
+## 📚 API Documentation
+
+Interactive Swagger documentation is available when the API is running:
+-   **Swagger UI**: http://localhost:3000/swagger
 
 ## 📁 Project Structure
 
 ```
 windows-explorer-test/
 ├── apps/
-│   ├── api/              # Backend (Elysia + TypeScript)
+│   ├── api/              # Backend (Elysia + Clean Arch)
 │   │   ├── src/
-│   │   │   ├── domain/           # Business logic
-│   │   │   ├── application/      # Services
-│   │   │   ├── infrastructure/   # Database, repositories
-│   │   │   └── presentation/     # HTTP routes
-│   │   ├── Dockerfile
-│   │   └── package.json
+│   │   │   ├── domain/           # Entities & Interfaces
+│   │   │   ├── application/      # Services & Use Cases
+│   │   │   ├── infrastructure/   # Drizzle ORM & DB
+│   │   │   └── presentation/     # Routes
+│   │   └── Dockerfile
 │   └── web/              # Frontend (Vue 3 + Vite)
 │       ├── src/
-│       │   ├── components/
-│       │   ├── composables/
-│       │   ├── services/
-│       │   └── types/
-│       ├── Dockerfile
-│       └── package.json
+│       │   ├── components/       # UI Components
+│       │   ├── composables/      # Shared State Logic
+│       │   └── views/            # Main Views
+│       └── Dockerfile
 ├── packages/
-│   └── shared/           # Shared TypeScript types
+│   └── shared/           # Shared TypeScript Types
 └── docker-compose.yml
 ```
 
-## 🧪 Testing
-
-```bash
-# Run all tests
-bun test
-
-# Backend tests
-cd apps/api && bun test
-
-# Frontend tests
-cd apps/web && bun test
-
-# E2E tests
-cd apps/web && bun run test:e2e
-```
-
-## 📚 API Documentation
-
-Once the backend is running, visit:
-- Swagger UI: http://localhost:3000/swagger
-
-## 🔧 Environment Variables
-
-Copy `.env.example` to `.env` and adjust as needed
-
 ## 📄 License
-
 Private project for technical assessment.
