@@ -183,14 +183,12 @@ function handleFilterChange(payload: { filterType: 'folder' | 'file' | 'all' }) 
 }
 
 async function handleFolderCreated() {
-  // Reload current folder or root folders
-  await loadRootFolders()
+  // Only refresh content panel, do not reload tree
   contentPanelKey.value++
 }
 
 async function handleFileUploaded() {
-  // Reload current folder
-  await loadRootFolders()
+  // Only refresh content panel, do not reload tree
   contentPanelKey.value++
 }
 
@@ -200,8 +198,7 @@ async function refreshView() {
 }
 
 async function handleRenamed() {
-  // Reload to reflect changes
-  await loadRootFolders()
+  // Only refresh content panel, do not reload tree
   contentPanelKey.value++
   clearSelection()
 }

@@ -16,14 +16,6 @@
       <span>{{ error }}</span>
     </div>
 
-    <!-- Empty State (No Selection & Not Searching & No Content) -->
-    <div v-else-if="!selectedFolder && !isSearchActive && isEmpty && !isLoading" class="content-panel__state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-      </svg>
-      <span>Select a folder to view its contents</span>
-    </div>
-
     <!-- Empty Search Results -->
     <div v-else-if="isSearchActive && isEmpty" class="content-panel__state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -36,12 +28,20 @@
       </button>
     </div>
 
-    <!-- Empty Folder -->
-    <div v-else-if="!isSearchActive && isEmpty" class="content-panel__state">
+    <!-- Empty Folder (Selected folder with no content) -->
+    <div v-else-if="selectedFolder && !isSearchActive && isEmpty" class="content-panel__state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
       </svg>
       <span>📂 This folder is empty</span>
+    </div>
+
+    <!-- Empty State (No Selection & Not Searching) -->
+    <div v-else-if="!selectedFolder && !isSearchActive && isEmpty && !isLoading" class="content-panel__state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      </svg>
+      <span>Select a folder to view its contents</span>
     </div>
 
     <!-- Grid Content -->
