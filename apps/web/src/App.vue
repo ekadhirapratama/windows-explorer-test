@@ -10,7 +10,6 @@
     @paste="handlePaste"
     @rename="openRenameModal"
     @delete="handleDelete"
-    @sort-change="handleSortChange"
     @filter-change="handleFilterChange"
   >
     <template #sidebar>
@@ -23,8 +22,6 @@
       <ContentPanel 
         :key="contentPanelKey"
         :selected-folder="selectedFolder"
-        :sort-by="sortBy"
-        :sort-order="sortOrder"
         :filter-type="filterType"
         :breadcrumb-items="breadcrumbItems"
         :on-navigate-to-folder="handleNavigateToFolder"
@@ -85,10 +82,6 @@ provide('folderTree', folderTreeComposable)
 const showCreateFolderModal = ref(false)
 const showUploadFileModal = ref(false)
 const showRenameModal = ref(false)
-
-// Sort state
-const sortBy = ref<'name' | 'type' | 'createdAt'>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
 
 // Filter state
 const filterType = ref<'folder' | 'file' | 'all'>('all')
@@ -183,11 +176,6 @@ function openUploadFileModal() {
 function openRenameModal() {
   if (!selectedItem.value) return
   showRenameModal.value = true
-}
-
-function handleSortChange(payload: { sortBy: 'name' | 'type' | 'createdAt'; sortOrder: 'asc' | 'desc' }) {
-  sortBy.value = payload.sortBy
-  sortOrder.value = payload.sortOrder
 }
 
 function handleFilterChange(payload: { filterType: 'folder' | 'file' | 'all' }) {

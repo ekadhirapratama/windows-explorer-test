@@ -95,8 +95,6 @@ import ContentItem from './ContentItem.vue'
 
 const props = defineProps<{
   selectedFolder: Folder | null
-  sortBy?: 'name' | 'type' | 'createdAt'
-  sortOrder?: 'asc' | 'desc'
   filterType?: 'folder' | 'file' | 'all'
   breadcrumbItems?: any[]
   onNavigateToFolder?: (folderId: string) => void
@@ -135,34 +133,18 @@ const isEmpty = computed(() => {
   return folders.value.length === 0 && files.value.length === 0
 })
 
-const sortBy = computed(() => props.sortBy ?? 'name')
-const sortOrder = computed(() => props.sortOrder ?? 'asc')
+const sortBy = computed(() => 'name') // Default to name sorting
+const sortOrder = computed(() => 'asc') // Default to ascending
 const filterType = computed(() => props.filterType ?? 'all')
 
 const sortedFolders = computed(() => {
-  let list = [...folders.value]
-  if (sortBy.value === 'name') {
-    list.sort((a, b) => a.name.localeCompare(b.name))
-  } else if (sortBy.value === 'createdAt') {
-    list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-  }
-  if (sortOrder.value === 'desc' && sortBy.value !== 'type') {
-    list.reverse()
-  }
-  return list
+  // Default sorting: folders first, then by name
+  return [...folders.value].sort((a, b) => a.name.localeCompare(b.name))
 })
 
 const sortedFiles = computed(() => {
-  let list = [...files.value]
-  if (sortBy.value === 'name') {
-    list.sort((a, b) => a.name.localeCompare(b.name))
-  } else if (sortBy.value === 'createdAt') {
-    list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-  }
-  if (sortOrder.value === 'desc' && sortBy.value !== 'type') {
-    list.reverse()
-  }
-  return list
+  // Default sorting: files by name
+  return [...files.value].sort((a, b) => a.name.localeCompare(b.name))
 })
 
 const filteredFolders = computed(() => {
@@ -175,7 +157,7 @@ const filteredFiles = computed(() => {
   return sortedFiles.value
 })
 
-const showFilesFirst = computed(() => sortBy.value === 'type' && sortOrder.value === 'desc')
+const showFilesFirst = computed(() => false) // Always show folders first
 
 const { setCurrentItems } = useExplorerState()
 
@@ -191,7 +173,7 @@ watch([folders, files], () => {
 
 
 // Watch selected folder and load its contents OR search results
-watch([() => props.selectedFolder, searchResults, isSearchActive, sortBy, sortOrder, filterType], async ([newFolder, results, searching]) => {
+watch([() => props.selectedFolder, searchResults, isSearchActive, filterType], async ([newFolder, results, searching]) => {
   if (searching && results) {
     // Show search results
     folders.value = results.folders

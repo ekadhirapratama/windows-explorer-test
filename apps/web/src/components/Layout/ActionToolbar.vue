@@ -38,20 +38,6 @@
 
       <div class="divider-v"></div>
 
-      <div class="sort-controls">
-        <label class="sort-label" for="sort-by">Sort</label>
-        <select id="sort-by" v-model="sortBy" class="sort-select" @change="emitSortChange">
-          <option value="name">Name</option>
-          <option value="type">Type</option>
-          <option value="createdAt">Date</option>
-        </select>
-        <button class="btn-icon" :title="sortOrder === 'asc' ? 'Ascending' : 'Descending'" @click="toggleSortOrder">
-          <span class="material-icons-round text-xl">
-            {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-          </span>
-        </button>
-      </div>
-
       <div class="filter-controls">
         <label class="filter-label">Show:</label>
         <div class="filter-buttons">
@@ -86,8 +72,6 @@ const emit = defineEmits<{
   rename: []
   share: []
   delete: []
-  sort: []
-  'sort-change': [payload: { sortBy: 'name' | 'type' | 'createdAt'; sortOrder: 'asc' | 'desc' }]
   'filter-change': [payload: { filterType: 'folder' | 'file' | 'all' }]
   more: []
 }>()
@@ -95,18 +79,7 @@ const emit = defineEmits<{
 const hasSelection = computed(() => props.hasSelection ?? false)
 const hasClipboard = computed(() => props.hasClipboard ?? false)
 const showDropdown = ref(false)
-const sortBy = ref<'name' | 'type' | 'createdAt'>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
 const filterType = ref<'folder' | 'file' | 'all'>('all')
-
-function emitSortChange() {
-  emit('sort-change', { sortBy: sortBy.value, sortOrder: sortOrder.value })
-}
-
-function toggleSortOrder() {
-  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-  emitSortChange()
-}
 
 function setFilter(type: 'folder' | 'file' | 'all') {
   filterType.value = type
@@ -281,32 +254,6 @@ onBeforeUnmount(() => {
 
 .btn-text:hover {
   background-color: var(--color-bg-hover);
-  border-color: var(--color-accent);
-}
-
-.sort-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.sort-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-.sort-select {
-  padding: 6px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-family: var(--font-family);
-}
-
-.sort-select:focus {
-  outline: none;
   border-color: var(--color-accent);
 }
 
