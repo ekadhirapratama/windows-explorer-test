@@ -132,22 +132,21 @@ onBeforeUnmount(() => {
 .btn-new {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-base);
-  font-family: var(--font-family);
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  transition: background 0.15s;
+  border: none;
   position: relative;
 }
 
 .btn-new:hover {
-  background-color: var(--color-bg-hover);
-  border-color: var(--color-accent);
+  background-color: #1e4bd0;
 }
 
 .dropdown {
