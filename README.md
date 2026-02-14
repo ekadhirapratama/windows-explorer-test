@@ -6,23 +6,6 @@ A modern, highly responsive Windows Explorer clone built with **Vue 3**, **Elysi
 
 ![image](https://s.digitalservice.id/azc8ux)
 
-## 🏗️ Architecture
-
-The project is structured as a **monorepo** using Bun workspaces, ensuring efficient dependency management and type safety across the full stack.
-
-### Backend (Clean Architecture)
-The API (`apps/api`) follows **Hexagonal (Clean) Architecture** principles to ensure separation of concerns and maintainability:
-- **Domain Layer**: Core business entities and repository interfaces (independent of external frameworks).
-- **Application Layer**: Use cases and services that orchestrate business logic.
-- **Infrastructure Layer**: Concrete implementations of repositories (Drizzle ORM), database connections, and external adapters.
-- **Presentation Layer**: HTTP routes and controllers using ElysiaJS.
-
-### Frontend (Component-Based)
-The Web app (`apps/web`) is built with **Vue 3 (Composition API)** and **Vite**:
-- **State Management**: Custom Composables (`useExplorerState`) for lightweight, reactive state handling.
-- **UI Components**: Modular, reusable components (FolderTree, ContentPanel, ActionToolbar) styled with scoped CSS.
-- **Performance**: Lazy-loading folder structures to handle deep hierarchies efficiently.
-
 ## 🛠️ Technology Stack & Dependencies
 
 *   **Runtime**: [Bun](https://bun.sh) (v1.3.9+) - Fast JavaScript runtime & package manager.
@@ -41,11 +24,45 @@ The Web app (`apps/web`) is built with **Vue 3 (Composition API)** and **Vite**:
 -   **Sorting & Filtering**: Sort by Name/Type/Date and Filter by file type.
 -   **"Quick Access" & "This PC"**: Categorized sidebar for easy navigation.
 
-## 📋 Prerequisites
+## 🏗️ Architecture
 
--   [Bun](https://bun.sh) v1.3.9 or higher
--   [Docker](https://www.docker.com/) and Docker Compose
--   PostgreSQL 14+ (optional, can use Docker)
+The project is structured as a **monorepo** using Bun workspaces, ensuring efficient dependency management and type safety across the full stack.
+
+### Backend (Clean Architecture)
+The API (`apps/api`) follows **Hexagonal (Clean) Architecture** principles to ensure separation of concerns and maintainability:
+- **Domain Layer**: Core business entities and repository interfaces (independent of external frameworks).
+- **Application Layer**: Use cases and services that orchestrate business logic.
+- **Infrastructure Layer**: Concrete implementations of repositories (Drizzle ORM), database connections, and external adapters.
+- **Presentation Layer**: HTTP routes and controllers using ElysiaJS.
+
+### Frontend (Component-Based)
+The Web app (`apps/web`) is built with **Vue 3 (Composition API)** and **Vite**:
+- **State Management**: Custom Composables (`useExplorerState`) for lightweight, reactive state handling.
+- **UI Components**: Modular, reusable components (FolderTree, ContentPanel, ActionToolbar) styled with scoped CSS.
+- **Performance**: Lazy-loading folder structures to handle deep hierarchies efficiently.
+
+### Project Structure
+
+```
+windows-explorer-test/
+├── apps/
+│   ├── api/              # Backend (Elysia + Clean Arch)
+│   │   ├── src/
+│   │   │   ├── domain/           # Entities & Interfaces
+│   │   │   ├── application/      # Services & Use Cases
+│   │   │   ├── infrastructure/   # Drizzle ORM & DB
+│   │   │   └── presentation/     # Routes
+│   │   └── Dockerfile
+│   └── web/              # Frontend (Vue 3 + Vite)
+│       ├── src/
+│       │   ├── components/       # UI Components
+│       │   ├── composables/      # Shared State Logic
+│       │   └── views/            # Main Views
+│       └── Dockerfile
+├── packages/
+│   └── shared/           # Shared TypeScript Types
+└── docker-compose.yml
+```
 
 ## 🚀 Installation & Quick Start
 
@@ -104,28 +121,6 @@ cd apps/web && bun test
 Interactive Swagger documentation is available when the API is running:
 -   **Swagger UI**: http://localhost:3000/swagger
 
-## 📁 Project Structure
-
-```
-windows-explorer-test/
-├── apps/
-│   ├── api/              # Backend (Elysia + Clean Arch)
-│   │   ├── src/
-│   │   │   ├── domain/           # Entities & Interfaces
-│   │   │   ├── application/      # Services & Use Cases
-│   │   │   ├── infrastructure/   # Drizzle ORM & DB
-│   │   │   └── presentation/     # Routes
-│   │   └── Dockerfile
-│   └── web/              # Frontend (Vue 3 + Vite)
-│       ├── src/
-│       │   ├── components/       # UI Components
-│       │   ├── composables/      # Shared State Logic
-│       │   └── views/            # Main Views
-│       └── Dockerfile
-├── packages/
-│   └── shared/           # Shared TypeScript Types
-└── docker-compose.yml
-```
 
 ## 📄 License
 Private project for technical assessment.
