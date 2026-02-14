@@ -5,11 +5,24 @@ import { folderRoutes } from './presentation/routes/folders'
 import { fileRoutes } from './presentation/routes/files'
 import { searchRoutes } from './presentation/routes/search'
 
-const app = new Elysia()
+export const app = new Elysia()
+    // CORS middleware
     // CORS middleware
     .use(cors({
-        origin: true, // Allow all origins in development
-        credentials: true
+        origin: (request): boolean => {
+            const origin = request.headers.get('origin')
+            // Allow requests without origin (like curl) or same-origin
+            if (!origin) return true
+
+            // Allow localhost during development (simulating strict whitelist)
+            if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+                return true
+            }
+
+            return false
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'] // Explicitly allow methods
     }))
 
     // Swagger documentation
@@ -54,6 +67,16 @@ const app = new Elysia()
             return { error: 'Folder not found' }
         }
 
+        if (error.message === 'Target folder not found') {
+            set.status = 404
+            return { error: 'Target folder not found' }
+        }
+
+        if (error.message === 'Cannot move folder into itself or its descendants') {
+            set.status = 400
+            return { error: 'Cannot move folder into itself or its descendants' }
+        }
+
         if (error.message === 'Search query cannot be empty') {
             set.status = 400
             return { error: 'Search query cannot be empty' }
@@ -82,6 +105,16 @@ const app = new Elysia()
         if (error.message === 'File name cannot be empty') {
             set.status = 400
             return { error: 'File name cannot be empty' }
+        }
+
+        if (error.message === 'Failed to move folder') {
+            set.status = 500
+            return { error: 'Failed to move folder' }
+        }
+
+        if (error.message === 'Failed to rename folder') {
+            set.status = 500
+            return { error: 'Failed to rename folder' }
         }
 
         set.status = 500
